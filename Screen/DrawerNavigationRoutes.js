@@ -1,39 +1,39 @@
-// Example of Splash, Login and Sign Up in React Native
-// https://aboutreact.com/react-native-login-and-signup/
-
 // Import React
 import React from 'react';
 
 // Import Navigators from React Navigation
-import {createStackNavigator} from '@react-navigation/stack';
-import {createDrawerNavigator} from '@react-navigation/drawer';
+import { createStackNavigator } from '@react-navigation/stack';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 
 // Import Screens
 import HomeScreen from './drawerScreens/HomeScreen';
 import SettingsScreen from './drawerScreens/SettingsScreen';
+import CameraScreen from './drawerScreens/CameraScreen';
+import CommunityScreen from './drawerScreens/CommunityScreen';
+import InfoScreen from './drawerScreens/InfoScreen';
+
 import CustomSidebarMenu from './Components/CustomSidebarMenu';
-import NavigationDrawerHeader from './Components/NavigationDrawerHeader';
+import BackBtn from './Components/BackBtn';
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
 
-const homeScreenStack = ({navigation}) => {
-  return (
-    <Stack.Navigator initialRouteName="HomeScreen">
+// ✅ 공통 Stack 생성 함수
+const createScreenStack = (name, component, navigationTitle) => {
+  return ({ navigation }) => (
+    <Stack.Navigator>
       <Stack.Screen
-        name="HomeScreen"
-        component={HomeScreen}
+        name={name}
+        component={component}
         options={{
-          title: 'Home', //Set Header Title
-          headerLeft: () => (
-            <NavigationDrawerHeader navigationProps={navigation} />
-          ),
+          title: navigationTitle,
+          headerLeft: () => <BackBtn navigation={navigation} />,
           headerStyle: {
-            backgroundColor: '#307ecc', //Set Header color
+            backgroundColor: '#307ecc',
           },
-          headerTintColor: '#fff', //Set Header text color
+          headerTintColor: '#fff',
           headerTitleStyle: {
-            fontWeight: 'bold', //Set Header text style
+            fontWeight: 'bold',
           },
         }}
       />
@@ -41,55 +41,46 @@ const homeScreenStack = ({navigation}) => {
   );
 };
 
-const settingScreenStack = ({navigation}) => {
-  return (
-    <Stack.Navigator
-      initialRouteName="SettingsScreen"
-      screenOptions={{
-        headerLeft: () => (
-          <NavigationDrawerHeader navigationProps={navigation} />
-        ),
-        headerStyle: {
-          backgroundColor: '#307ecc', //Set Header color
-        },
-        headerTintColor: '#fff', //Set Header text color
-        headerTitleStyle: {
-          fontWeight: 'bold', //Set Header text style
-        },
-      }}>
-      <Stack.Screen
-        name="SettingsScreen"
-        component={SettingsScreen}
-        options={{
-          title: 'Settings', //Set Header Title
-        }}
-      />
-    </Stack.Navigator>
-  );
-};
-
-const DrawerNavigatorRoutes = (props) => {
+const DrawerNavigatorRoutes = () => {
   return (
     <Drawer.Navigator
-      drawerContentOptions={{
-        activeTintColor: '#cee1f2',
-        color: '#cee1f2',
-        itemStyle: {marginVertical: 5, color: 'white'},
-        labelStyle: {
-          color: '#d8d8d8',
-        },
+      screenOptions={{
+        drawerActiveTintColor: '#cee1f2',
+        drawerInactiveTintColor: '#d8d8d8',
+        drawerStyle: { backgroundColor: '#1f1f1f' },
+        headerShown: false, // Drawer 헤더 숨기기
       }}
-      screenOptions={{headerShown: false}}
-      drawerContent={CustomSidebarMenu}>
+      drawerContent={(props) => <CustomSidebarMenu {...props} />}
+    >
+      {/* ✅ 홈 스크린 */}
       <Drawer.Screen
-        name="homeScreenStack"
-        options={{drawerLabel: 'Home Screen'}}
-        component={homeScreenStack}
+        name="HomeScreenStack"
+        options={{ drawerLabel: 'Home' }}
+        component={createScreenStack('HomeScreen', HomeScreen, 'Home')}
       />
+      {/* ✅ 설정 스크린 */}
       <Drawer.Screen
-        name="settingScreenStack"
-        options={{drawerLabel: 'Setting Screen'}}
-        component={settingScreenStack}
+        name="SettingScreenStack"
+        options={{ drawerLabel: 'Settings' }}
+        component={createScreenStack('SettingsScreen', SettingsScreen, 'Settings')}
+      />
+      {/* ✅ 카메라 스크린 */}
+      <Drawer.Screen
+        name="CameraScreenStack"
+        options={{ drawerLabel: 'Camera' }}
+        component={createScreenStack('CameraScreen', CameraScreen, 'Camera')}
+      />
+      {/* ✅ 커뮤니티 스크린 */}
+      <Drawer.Screen
+        name="CommunityScreenStack"
+        options={{ drawerLabel: 'Community' }}
+        component={createScreenStack('CommunityScreen', CommunityScreen, 'Community')}
+      />
+      {/* ✅ 수하물 정보 스크린 */}
+      <Drawer.Screen
+        name="InfoScreenStack"
+        options={{ drawerLabel: 'Info' }}
+        component={createScreenStack('InfoScreen', InfoScreen, 'Info')}
       />
     </Drawer.Navigator>
   );

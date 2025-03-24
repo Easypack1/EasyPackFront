@@ -1,9 +1,13 @@
 import React from 'react';
+import { TouchableOpacity } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
-const BackBtn = () => {
+const BackBtn = ({ navigation }) => {
   return (
-    <MaterialIcons name="logout" size={24} color="black" />
+    <TouchableOpacity onPress={() => navigation.goBack()}>
+      <MaterialIcons name="arrow-back" size={24} color="black" />
+    </TouchableOpacity>
   );
 };
+
 export default BackBtn;

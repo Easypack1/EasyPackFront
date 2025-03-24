@@ -1,9 +1,4 @@
-// Example of Splash, Login and Sign Up in React Native
-// https://aboutreact.com/react-native-login-and-signup/
-
-// Import React and Component
-import React, {useState, createRef} from 'react';
-
+import React, { useState, createRef } from 'react';
 import {
   StyleSheet,
   TextInput,
@@ -17,66 +12,46 @@ import {
 } from 'react-native';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 import Loader from './Components/loader';
 
-const LoginScreen = ({navigation}) => {
-  const [userName, setUserName] = useState('');
+const LoginScreen = ({ navigation }) => {
   const [userId, setUserId] = useState('');
-  const [userGrade, setUserGrade] = useState('');
   const [userPassword, setUserPassword] = useState('');
-  const [userPasswordchk, setUserPasswordchk] = useState('');
   const [loading, setLoading] = useState(false);
   const [errortext, setErrortext] = useState('');
-  const [errortext2, setErrortext2] = useState('');
-  const [isRegistraionSuccess, setIsRegistraionSuccess] = useState(false);
 
   const passwordInputRef = createRef();
 
+  // ✅ 임시 사용자 데이터 (서버 대신 사용)
+  const MOCK_USER = {
+    user_id: 'testuser',
+    password: '12345',
+  };
+
   const handleSubmitPress = async () => {
     if (!userId || !userPassword) {
-        alert("아이디와 비밀번호를 입력해주세요.");
-        return;
+      alert('아이디와 비밀번호를 입력해주세요.');
+      return;
     }
 
     setLoading(true);
 
-    const dataToSend = {
-        user_id: userId,
-        password: userPassword,
-    };
+    // ✅ 서버 요청 시뮬레이션 (setTimeout으로 딜레이)
+    setTimeout(async () => {
+      if (userId === MOCK_USER.user_id && userPassword === MOCK_USER.password) {
+        console.log('✅ 로그인 성공');
+        await AsyncStorage.setItem('user_id', userId); // 임시로 AsyncStorage에 저장
 
-    console.log("📢 로그인 요청 데이터:", dataToSend);
+        // ✅ 로그인 성공 시 홈 화면으로 이동
+        navigation.replace('HomeScreenStack');
+      } else {
+        console.log('❌ 로그인 실패');
+        setErrortext('아이디 또는 비밀번호가 잘못되었습니다.');
+      }
 
-    try {
-        const response = await fetch('http://10.0.2.2:8081/api/user/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dataToSend),
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP 오류! 상태 코드: ${response.status}`);
-        }
-
-        const responseJson = await response.json();
-        console.log("📢 로그인 응답:", responseJson);
-
-        setLoading(false);
-
-        if (responseJson.status === "success") {
-            AsyncStorage.setItem("user_id", responseJson.user.stu_id);
-            navigation.replace("DrawerNavigationRoutes");
-        } else {
-            setErrortext("로그인 실패: " + responseJson.message);
-        }
-    } catch (error) {
-        setLoading(false);
-        console.error("❌ 로그인 요청 실패:", error);
-        setErrortext("서버 오류. 다시 시도해주세요.");
-    }
-};
-
+      setLoading(false);
+    }, 1000); // 1초 딜레이로 서버 응답 시뮬레이션
+  };
 
   return (
     <View style={styles.mainBody}>
@@ -90,7 +65,7 @@ const LoginScreen = ({navigation}) => {
         }}>
         <View>
           <KeyboardAvoidingView enabled>
-            <View style={{alignItems: 'center'}}>
+            <View style={{ alignItems: 'center' }}>
               <Image
                 source={require('../Image/easypack.png')}
                 style={{
@@ -104,17 +79,14 @@ const LoginScreen = ({navigation}) => {
             <View style={styles.SectionStyle}>
               <TextInput
                 style={styles.inputStyle}
-                onChangeText={(userId) =>
-                  setUserId(userId)
-                }
-                placeholder="아이디" //dummy@abc.com
+                onChangeText={(userId) => setUserId(userId)}
+                placeholder="아이디"
                 placeholderTextColor="#8b9cb5"
                 autoCapitalize="none"
                 keyboardType="default"
                 returnKeyType="next"
                 onSubmitEditing={() =>
-                  passwordInputRef.current &&
-                  passwordInputRef.current.focus()
+                  passwordInputRef.current && passwordInputRef.current.focus()
                 }
                 underlineColorAndroid="#f000"
                 blurOnSubmit={false}
@@ -123,10 +95,8 @@ const LoginScreen = ({navigation}) => {
             <View style={styles.SectionStyle}>
               <TextInput
                 style={styles.inputStyle}
-                onChangeText={(UserPassword) =>
-                  setUserPassword(UserPassword)
-                }
-                placeholder="비밀번호" //12345
+                onChangeText={(userPassword) => setUserPassword(userPassword)}
+                placeholder="비밀번호"
                 placeholderTextColor="#8b9cb5"
                 keyboardType="default"
                 ref={passwordInputRef}
@@ -138,9 +108,7 @@ const LoginScreen = ({navigation}) => {
               />
             </View>
             {errortext != '' ? (
-              <Text style={styles.errorTextStyle}>
-                {errortext}
-              </Text>
+              <Text style={styles.errorTextStyle}>{errortext}</Text>
             ) : null}
             <TouchableOpacity
               style={styles.buttonStyle}
@@ -159,6 +127,7 @@ const LoginScreen = ({navigation}) => {
     </View>
   );
 };
+
 export default LoginScreen;
 
 const styles = StyleSheet.create({

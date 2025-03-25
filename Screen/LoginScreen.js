@@ -16,13 +16,13 @@ import Loader from './Components/loader';
 
 const LoginScreen = ({ navigation }) => {
   const [userId, setUserId] = useState('');
-  const [userPassword, setUserPassword] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errortext, setErrortext] = useState('');
 
   const passwordInputRef = createRef();
 
-  // ✅ 타임아웃 설정 함수 추가
+  // ✅ 타임아웃 설정 함수
   const fetchWithTimeout = (url, options, timeout = 10000) => {
     return Promise.race([
       fetch(url, options),
@@ -32,9 +32,9 @@ const LoginScreen = ({ navigation }) => {
     ]);
   };
 
-  // ✅ 로그인 처리 함수 수정 (토큰 없이 처리)
+  // ✅ 로그인 처리 함수
   const handleSubmitPress = async () => {
-    if (!userId || !userPassword) {
+    if (!userId || !password) {
       Alert.alert('알림', '아이디와 비밀번호를 입력해주세요.');
       return;
     }
@@ -49,12 +49,12 @@ const LoginScreen = ({ navigation }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username: userId,
-          password: userPassword,
+          user_id: userId, // ✅ 필드명 수정
+          password: password, // ✅ 필드명 수정
         }),
       });
 
-      // ✅ JSON 응답인지 확인 후 파싱
+      // ✅ JSON 응답인지 확인 후 처리
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
         const jsonResponse = await response.json();
@@ -62,12 +62,12 @@ const LoginScreen = ({ navigation }) => {
         if (response.ok) {
           console.log('✅ 로그인 성공:', jsonResponse);
 
-          // ✅ 사용자 정보 출력 (예: 이름, 이메일 등)
+          // ✅ 사용자 정보 출력
           console.log('사용자 정보:', jsonResponse);
 
           // ✅ 로그인 성공 후 다음 화면으로 이동
           navigation.replace('DrawerNavigationRoutes', {
-            userData: jsonResponse, // 사용자 데이터 전달 가능
+            userData: jsonResponse, // 사용자 데이터 전달
           });
         } else {
           console.log('❌ 로그인 실패:', jsonResponse);
@@ -134,7 +134,7 @@ const LoginScreen = ({ navigation }) => {
             <View style={styles.SectionStyle}>
               <TextInput
                 style={styles.inputStyle}
-                onChangeText={(userPassword) => setUserPassword(userPassword)}
+                onChangeText={(password) => setPassword(password)}
                 placeholder="비밀번호"
                 placeholderTextColor="#8b9cb5"
                 keyboardType="default"
@@ -147,7 +147,8 @@ const LoginScreen = ({ navigation }) => {
               />
             </View>
 
-            {errortext != '' ? (
+            {/* ✅ 오류 메시지 출력 */}
+            {errortext !== '' ? (
               <Text style={styles.errorTextStyle}>{errortext}</Text>
             ) : null}
 
@@ -160,6 +161,7 @@ const LoginScreen = ({ navigation }) => {
               <Text style={styles.buttonTextStyle}>로그인</Text>
             </TouchableOpacity>
 
+            {/* ✅ 회원가입 링크 */}
             <Text
               style={styles.registerTextStyle}
               onPress={() => navigation.navigate('RegisterScreen')}

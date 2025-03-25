@@ -13,7 +13,7 @@ import RNPickerSelect from 'react-native-picker-select';
 const RegisterScreen = ({ navigation }) => {
   const [step, setStep] = useState(1);
 
-  // ✅ Step 1 State
+  // ✅ Step 1 State (저장은 하지 않음)
   const [terms, setTerms] = useState({
     termsOfUse: false, // 필수
     privacyPolicy: false, // 필수
@@ -28,35 +28,34 @@ const RegisterScreen = ({ navigation }) => {
   const [passwordConfirm, setPasswordConfirm] = useState('');
 
   // ✅ Step 3 State
-  const [country, setCountry] = useState('');
-  const [airline, setAirline] = useState('');
+  const [travelDestination, setTravelDestination] = useState(''); // 여행지 저장
+  const [airline, setAirline] = useState(''); // 항공사 저장
 
   // ✅ 필수 약관 체크 확인 함수
   const isRequiredTermsAccepted = () => {
     return terms.termsOfUse && terms.privacyPolicy;
   };
 
-  // ✅ 전체 동의 버튼 동작
-  const handleAcceptAllTerms = () => {
-    const newTermsState = !(
-      terms.termsOfUse &&
-      terms.privacyPolicy &&
-      terms.personalInfo &&
-      terms.marketing
-    );
-
-    setTerms({
-      termsOfUse: newTermsState,
-      privacyPolicy: newTermsState,
-      personalInfo: newTermsState,
-      marketing: newTermsState,
-    });
-  };
-
-  // ✅ 개별 약관 체크 동작
+  // ✅ 개별 약관 체크 동작 (저장은 안 함)
   const handleTermChange = (term) => {
     setTerms({ ...terms, [term]: !terms[term] });
   };
+  // ✅ 전체 동의 함수 복구
+const handleAcceptAllTerms = () => {
+  const newTermsState = !(
+    terms.termsOfUse &&
+    terms.privacyPolicy &&
+    terms.personalInfo &&
+    terms.marketing
+  );
+
+  setTerms({
+    termsOfUse: newTermsState,
+    privacyPolicy: newTermsState,
+    personalInfo: newTermsState,
+    marketing: newTermsState,
+  });
+};
 
   // ✅ 다음 단계로 진행 처리
   const handleNext = () => {
@@ -67,14 +66,14 @@ const RegisterScreen = ({ navigation }) => {
       }
       setStep(2);
     } else if (step === 2) {
-      if (!userId || !password || password !== passwordConfirm) {
-        Alert.alert('알림', '아이디와 비밀번호를 정확히 입력해주세요.');
+      if (!userId || !nickname || !password || password !== passwordConfirm) {
+        Alert.alert('알림', '아이디, 닉네임, 비밀번호를 정확히 입력해주세요.');
         return;
       }
       setStep(3);
     } else if (step === 3) {
-      if (!country || !airline) {
-        Alert.alert('알림', '국가와 항공사를 선택해주세요.');
+      if (!travelDestination || !airline) {
+        Alert.alert('알림', '여행지와 항공사를 선택해주세요.');
         return;
       }
       handleRegister();
@@ -87,15 +86,11 @@ const RegisterScreen = ({ navigation }) => {
       user_id: userId,
       nickname,
       password,
-      country,
-      airline, 
-      termsOfUse: terms.termsOfUse,
-      privacyPolicy: terms.privacyPolicy,
-      personalInfo: terms.personalInfo,
-      marketing: terms.marketing,
+      travel_destination: travelDestination,
+      airline,
     };
 
-    console.log('📢 등록 데이터:', dataToSend);
+    console.log('📢 전송 데이터:', dataToSend);
 
     try {
       const response = await fetch('http://3.106.58.164:8082/api/auth/register', {
@@ -106,47 +101,42 @@ const RegisterScreen = ({ navigation }) => {
         body: JSON.stringify(dataToSend),
       });
 
-      // ✅ 응답의 Content-Type 확인
-    const contentType = response.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
-      const responseJson = await response.json();
-      if (response.ok) {
-        console.log('✅ 회원가입 성공:', responseJson);
-        Alert.alert('성공', '회원가입이 완료되었습니다.', [
-          { text: '로그인하기', onPress: () => navigation.replace('LoginScreen') }
-        ]);
+      // ✅ 응답 확인 및 처리
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const responseJson = await response.json();
+        if (response.ok) {
+          console.log('✅ 회원가입 성공:', responseJson);
+          Alert.alert('성공', '회원가입이 완료되었습니다.', [
+            { text: '로그인하기', onPress: () => navigation.replace('LoginScreen') }
+          ]);
+        } else {
+          console.log('❌ 회원가입 실패:', responseJson);
+          Alert.alert('실패', responseJson.message || '회원가입에 실패했습니다.');
+        }
       } else {
-        console.log('❌ 회원가입 실패:', responseJson);
-        Alert.alert('실패', responseJson.message || '회원가입에 실패했습니다.');
+        const textResponse = await response.text();
+        console.log('❌ 응답 오류:', textResponse);
+        Alert.alert('오류', textResponse || '서버에서 잘못된 응답을 받았습니다.');
       }
-    } else {
-      // JSON이 아닌 경우 텍스트로 응답 처리
-      const textResponse = await response.text();
-      console.log('❌ 응답 오류:', textResponse);
-      Alert.alert('오류', textResponse || '서버에서 잘못된 응답을 받았습니다.');
+    } catch (error) {
+      console.error('❌ 서버 연결 오류:', error.message);
+      Alert.alert('에러', '서버와의 연결에 실패했습니다.');
     }
-  } catch (error) {
-    console.error('❌ 서버 연결 오류:', error.message);
-    Alert.alert('에러', '서버와의 연결에 실패했습니다.');
-  }
-};
+  };
 
   // ✅ 단계별 표시기 렌더링
-  const renderProgressBar = () => {
-    return (
-      <View style={styles.progressBarContainer}>
-        <View style={[styles.progressBar, step >= 1 && styles.activeProgress]} />
-        <View style={[styles.progressBar, step >= 2 && styles.activeProgress]} />
-        <View style={[styles.progressBar, step >= 3 && styles.activeProgress]} />
-      </View>
-    );
-  };
+  const renderProgressBar = () => (
+    <View style={styles.progressBarContainer}>
+      <View style={[styles.progressBar, step >= 1 && styles.activeProgress]} />
+      <View style={[styles.progressBar, step >= 2 && styles.activeProgress]} />
+      <View style={[styles.progressBar, step >= 3 && styles.activeProgress]} />
+    </View>
+  );
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* ✅ 상단 단계 표시기 */}
       {renderProgressBar()}
-
       {/* ✅ Step 1: 약관 동의 */}
       {step === 1 && (
         <View>
@@ -182,14 +172,14 @@ const RegisterScreen = ({ navigation }) => {
             style={styles.checkbox}
             onPress={handleAcceptAllTerms}>
             <Text>
-              {isRequiredTermsAccepted() && terms.personalInfo && terms.marketing ? '✅' : '⬜'} 전체 동의하기
+              {terms.termsOfUse && terms.privacyPolicy && terms.personalInfo && terms.marketing ? '✅' : '⬜'} 전체 동의하기
             </Text>
           </TouchableOpacity>
         </View>
       )}
 
-      {/* ✅ Step 2: 아이디 및 비밀번호 */}
-      {step === 2 && (
+     {/* ✅ Step 2: 아이디 및 비밀번호 */}
+     {step === 2 && (
         <View>
           <Text style={styles.title}>아이디와 비밀번호를 입력해 주세요.</Text>
           <TextInput
@@ -198,7 +188,7 @@ const RegisterScreen = ({ navigation }) => {
             value={userId}
             onChangeText={setUserId}
           />
-           <TextInput
+          <TextInput
             style={styles.input}
             placeholder="닉네임"
             value={nickname}
@@ -221,12 +211,11 @@ const RegisterScreen = ({ navigation }) => {
         </View>
       )}
 
-
       {step === 3 && (
         <View>
           <Text style={styles.title}>나라와 항공사를 선택해주세요.</Text>
           <RNPickerSelect
-            onValueChange={(value) => setCountry(value)}
+            onValueChange={(value) => setTravelDestination(value)}
             placeholder={{ label: '국가 선택', value: null }}
             items={[
             { label: '베트남', value: 'vietnam' },

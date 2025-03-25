@@ -1,13 +1,30 @@
 import React from 'react';
-import { TouchableOpacity } from 'react-native';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
-const BackBtn = ({ navigation }) => {
+const BackBtn = () => {
+  const navigation = useNavigation();
+
   return (
-    <TouchableOpacity onPress={() => navigation.goBack()}>
-      <MaterialIcons name="arrow-back" size={24} color="white" />
+    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.button}>
+      <Image
+       source={require('../../Image/back-btn.png')}
+       style={[styles.icon,{tintColor:'#FFFFFF'}]} />
     </TouchableOpacity>
   );
 };
+
+const styles = StyleSheet.create({
+  button: {
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  icon: {
+    width: 24, // 이미지 크기 조정 가능
+    height: 24, // 이미지 크기 조정 가능
+    resizeMode: 'contain',
+  },
+});
 
 export default BackBtn;

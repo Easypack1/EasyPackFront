@@ -33,8 +33,14 @@ const Auth = () => {
         component={RegisterScreen}
         options={{
           title: '',
-          headerBackTitleVisible: false,
-          headerBackImage: BackBtn,
+          headerLeft: () => <BackBtn onPress={() => navigation.goBack()} />, // ✅ 뒤로 가기 버튼 처리
+          headerStyle: {
+            backgroundColor: '#307ecc',
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
         }}
       />
     </Stack.Navigator>

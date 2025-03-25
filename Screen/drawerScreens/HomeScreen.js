@@ -127,37 +127,35 @@ const HomeScreen = ({ navigation }) => {
 
       {/* 🔹 여행지 날씨 바로 아래 렌더링 */}
       <View style={styles.weatherContainer}>
-        <Text style={styles.weatherTitle}>{city}</Text>
-        {days.length === 0 ? (
-          <ActivityIndicator color="white" style={{ marginTop: 10 }} size="large" />
-        ) : (
-          days.map((day, index) => (
-            <View key={index} style={styles.day}>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  width: "100%",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Text style={styles.temp}>
-                  {parseFloat(day.main.temp).toFixed(1)}°
-                </Text>
-                <Fontisto
-                  name={icons[day.weather[0].main]}
-                  size={25} // 아이콘 크기도 적절히 줄여서 맞춰주세요
-                  color="black"
-                />
-              </View>
-              <Text style={styles.description}>{day.weather[0].main}</Text>
-              <Text style={styles.tinyText}>
-                {day.weather[0].description}
-              </Text>
-            </View>
-          ))
-        )}
+  <Text style={styles.weatherTitle}>{city}</Text>
+  {days.length === 0 ? (
+    <ActivityIndicator color="black" style={{ marginTop: 10 }} size="large" />
+  ) : (
+    <View style={styles.day}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "100%",
+        }}
+      >
+        <Text style={styles.temp}>
+          {parseFloat(days[0].main.temp).toFixed(1)}°
+        </Text>
+        <Fontisto
+          name={icons[days[0].weather[0].main]}
+          size={25} // 아이콘 크기 줄이기
+          color="black"
+          style={{ marginLeft: 10 }} // 간격 조정
+        />
       </View>
+      <Text style={styles.description}>{days[0].weather[0].main}</Text>
+      <Text style={styles.tinyText}>{days[0].weather[0].description}</Text>
+    </View>
+  )}
+</View>
+
     </SafeAreaView>
   );
 };

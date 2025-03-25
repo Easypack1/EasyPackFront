@@ -40,22 +40,23 @@ const RegisterScreen = ({ navigation }) => {
   const handleTermChange = (term) => {
     setTerms({ ...terms, [term]: !terms[term] });
   };
-  // ✅ 전체 동의 함수 복구
-const handleAcceptAllTerms = () => {
-  const newTermsState = !(
-    terms.termsOfUse &&
-    terms.privacyPolicy &&
-    terms.personalInfo &&
-    terms.marketing
-  );
 
-  setTerms({
-    termsOfUse: newTermsState,
-    privacyPolicy: newTermsState,
-    personalInfo: newTermsState,
-    marketing: newTermsState,
-  });
-};
+  // ✅ 전체 동의 함수 복구
+  const handleAcceptAllTerms = () => {
+    const newTermsState = !(
+      terms.termsOfUse &&
+      terms.privacyPolicy &&
+      terms.personalInfo &&
+      terms.marketing
+    );
+
+    setTerms({
+      termsOfUse: newTermsState,
+      privacyPolicy: newTermsState,
+      personalInfo: newTermsState,
+      marketing: newTermsState,
+    });
+  };
 
   // ✅ 다음 단계로 진행 처리
   const handleNext = () => {
@@ -108,7 +109,7 @@ const handleAcceptAllTerms = () => {
         if (response.ok) {
           console.log('✅ 회원가입 성공:', responseJson);
           Alert.alert('성공', '회원가입이 완료되었습니다.', [
-            { text: '로그인하기', onPress: () => navigation.replace('LoginScreen') }
+            { text: '로그인하기', onPress: () => navigation.replace('LoginScreen', { travelDestination }) }
           ]);
         } else {
           console.log('❌ 회원가입 실패:', responseJson);

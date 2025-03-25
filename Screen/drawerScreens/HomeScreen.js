@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity, TextInput, Image, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, SafeAreaView, TouchableOpacity, TextInput, Image, StyleSheet, ActivityIndicator, ImageBackground } from 'react-native';
 import Fontisto from '@expo/vector-icons/Fontisto';
 
 const API_KEY = "dc421962c7495a4d3ad76358390c896c"; // 여기에 본인의 API 키 입력
@@ -15,7 +15,22 @@ const icons = {
   Thunderstorm: "lightning",
 };
 
-const HomeScreen = ({ navigation }) => {
+const HomeScreen = ({ route, navigation }) => {
+  // route.params가 없을 경우 빈 객체로 처리
+  const { travelDestination } = route.params || {}; 
+
+  // ✅ 여행지에 맞는 배경 이미지 가져오기
+  const getBackgroundImage = () => {
+    switch (travelDestination) {
+      case 'vietnam': return require('../../Image/vietnam.jpeg');
+      case 'usa': return require('../../Image/usa.jpeg');
+      case 'japan': return require('../../Image/japan.jpeg');
+      case 'thailand': return require('../../Image/thailand.jpeg');
+      case 'philippines': return require('../../Image/philippines.jpeg');
+      default: return require('../../Image/default.jpeg');
+    }
+  };
+
   // ✅ 메뉴 아이템 배열 → map으로 렌더링 처리
   const menuItems = [
     {
@@ -41,7 +56,7 @@ const HomeScreen = ({ navigation }) => {
   // 날씨 상태와 데이터를 관리하는 상태 변수
   const [city, setCity] = useState("Loading...");
   const [days, setDays] = useState([]);
-  
+
   // 날씨 정보 가져오는 함수
   const getWeather = async () => {
     try {
@@ -119,42 +134,36 @@ const HomeScreen = ({ navigation }) => {
           </View>
         </TouchableOpacity>
         
-        {/* ✅ 여행지 사진 버튼 */}
-        <TouchableOpacity style={[styles.button, styles.buttonBlue]}>
-          <Text style={styles.buttonTextBlack}>여행지 사진</Text>
-        </TouchableOpacity>
+        {/* ✅ 여행지 사진을 이미지가 꽉 차게 들어가도록 변경 */}
+        <View style={styles.imageBox}>
+          <Image 
+            source={getBackgroundImage()} // 동적으로 선택된 국가 이미지
+            style={styles.backgroundImage} // 이미지 스타일링 추가
+          />
+        </View>
+
       </View>
 
       {/* 🔹 여행지 날씨 바로 아래 렌더링 */}
       <View style={styles.weatherContainer}>
-  <Text style={styles.weatherTitle}>{city}</Text>
-  {days.length === 0 ? (
-    <ActivityIndicator color="black" style={{ marginTop: 10 }} size="large" />
-  ) : (
-    <View style={styles.day}>
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          width: "100%",
-        }}
-      >
-        <Text style={styles.temp}>
-          {parseFloat(days[0].main.temp).toFixed(1)}°
-        </Text>
-        <Fontisto
-          name={icons[days[0].weather[0].main]}
-          size={25} // 아이콘 크기 줄이기
-          color="black"
-          style={{ marginLeft: 10 }} // 간격 조정
-        />
+        <Text style={styles.weatherTitle}>{city}</Text>
+        {days.length === 0 ? (
+          <ActivityIndicator color="black" style={{ marginLeft: 10 }} size="large" />
+        ) : (
+          <View style={styles.day}>
+            <Fontisto
+              name={icons[days[0].weather[0].main]}
+              size={25}
+              color="black"
+            />
+            <Text style={styles.temp}>
+              {parseFloat(days[0].main.temp).toFixed(1)}°
+            </Text>
+            <Text style={styles.description}>{days[0].weather[0].main}</Text>
+            <Text style={styles.tinyText}>{days[0].weather[0].description}</Text>
+          </View>
+        )}
       </View>
-      <Text style={styles.description}>{days[0].weather[0].main}</Text>
-      <Text style={styles.tinyText}>{days[0].weather[0].description}</Text>
-    </View>
-  )}
-</View>
 
     </SafeAreaView>
   );
@@ -233,34 +242,36 @@ const styles = StyleSheet.create({
   weatherContainer: {
     marginTop: 10,
     width: '100%',
+    flexDirection: 'row', // 수평 정렬
+    justifyContent: 'center', // 중앙 정렬
     alignItems: 'center',
   },
   weatherTitle: {
-    fontSize: 15, // 제목 크기 줄이기
+    fontSize: 15,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginRight: 10, // 날씨 데이터와 간격 조정
   },
   day: {
-    alignItems: 'flex-start',
-    paddingHorizontal: 20,
-    marginBottom: 20,
+    flexDirection: 'row', // 한 줄 정렬
+    alignItems: 'center',
   },
   temp: {
     fontWeight: '600',
-    fontSize: 25, // 날씨 온도 크기 줄이기
+    fontSize: 20,
     color: 'black',
+    marginLeft: 10, // 아이콘과 간격
   },
   description: {
-    marginTop: -10,
-    fontSize: 20, // 날씨 설명 크기 줄이기
+    fontSize: 15, // 크기 줄임
     color: 'black',
     fontWeight: '500',
+    marginLeft: 10, // 온도와 간격
   },
   tinyText: {
-    marginTop: -5,
-    fontSize: 10, // 날씨 세부 설명 크기 줄이기
+    fontSize: 10,
     color: 'black',
     fontWeight: '500',
+    marginLeft: 5, // 설명과 간격 조정
   },
 
   // 🔹 버튼 공통 스타일
@@ -279,9 +290,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderWidth: 1,
     borderColor: '#ccc',
-  },
-  buttonBlue: {
-    backgroundColor: '#c8d7eb',
   },
 
   buttonContent: {
@@ -314,6 +322,20 @@ const styles = StyleSheet.create({
   topRightImage: {
     width: 40,
     height: 40,
+  },
+
+  // 🔹 여행지 사진 박스 스타일
+  imageBox: {
+    width: '85%',  // 박스 너비
+    height: 270,  // 박스 높이를 설정 (원하는 크기로 조정 가능)
+    borderRadius: 12,  // 모서리 둥글게
+    marginBottom: 20,  // 하단 여백
+    overflow: 'hidden',  // 이미지가 박스를 벗어나지 않도록
+  },
+  backgroundImage: {
+    width: '100%',  // 이미지가 박스 크기에 맞게
+    height: '100%',  // 이미지가 박스 크기에 맞게
+    resizeMode: 'cover',  // 이미지가 박스를 꽉 채우도록
   },
 });
 

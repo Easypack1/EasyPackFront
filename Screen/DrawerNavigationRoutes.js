@@ -27,7 +27,7 @@ const createScreenStack = (name, component, navigationTitle) => {
         component={component}
         options={{
           title: navigationTitle,
-          headerLeft: () => <BackBtn navigation={navigation} />,
+          headerLeft: () => <BackBtn onPress={() => navigation.goBack()} />, // ✅ 뒤로 가기 버튼 처리
           headerStyle: {
             backgroundColor: '#307ecc',
           },
@@ -48,38 +48,52 @@ const DrawerNavigatorRoutes = () => {
         drawerActiveTintColor: '#cee1f2',
         drawerInactiveTintColor: '#d8d8d8',
         drawerStyle: { backgroundColor: '#1f1f1f' },
-        headerShown: false, // Drawer 헤더 숨기기
+        headerShown: false, // ✅ Drawer의 기본 헤더 숨김
       }}
       drawerContent={(props) => <CustomSidebarMenu {...props} />}
     >
       {/* ✅ 홈 스크린 */}
       <Drawer.Screen
         name="HomeScreenStack"
-        options={{ drawerLabel: 'Home' }}
+        options={{
+          drawerLabel: 'Home',
+        }}
         component={createScreenStack('HomeScreen', HomeScreen, 'Home')}
       />
+
       {/* ✅ 설정 스크린 */}
       <Drawer.Screen
         name="SettingScreenStack"
-        options={{ drawerLabel: 'Settings' }}
+        options={{
+          drawerLabel: 'Settings',
+        }}
         component={createScreenStack('SettingsScreen', SettingsScreen, 'Settings')}
       />
+
       {/* ✅ 카메라 스크린 */}
       <Drawer.Screen
         name="CameraScreenStack"
-        options={{ drawerLabel: 'Camera' }}
+        options={{
+          drawerLabel: 'Camera',
+        }}
         component={createScreenStack('CameraScreen', CameraScreen, 'Camera')}
       />
+
       {/* ✅ 커뮤니티 스크린 */}
       <Drawer.Screen
         name="CommunityScreenStack"
-        options={{ drawerLabel: 'Community' }}
+        options={{
+          drawerLabel: 'Community',
+        }}
         component={createScreenStack('CommunityScreen', CommunityScreen, 'Community')}
       />
+
       {/* ✅ 수하물 정보 스크린 */}
       <Drawer.Screen
         name="InfoScreenStack"
-        options={{ drawerLabel: 'Info' }}
+        options={{
+          drawerLabel: 'Info',
+        }}
         component={createScreenStack('InfoScreen', InfoScreen, 'Info')}
       />
     </Drawer.Navigator>

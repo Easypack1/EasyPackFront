@@ -87,26 +87,38 @@ const RegisterScreen = ({ navigation }) => {
       password,
       country,
       airline,
+      termsOfUse: terms.termsOfUse,
+      privacyPolicy: terms.privacyPolicy,
+      personalInfo: terms.personalInfo,
+      marketing: terms.marketing,
     };
 
+    console.log('📢 등록 데이터:', dataToSend);
+
     try {
-      const response = await fetch('http://10.0.2.2:8081/api/user/register', {
+      const response = await fetch('http://3.106.58.164:8082/api/auth/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify(dataToSend),
       });
 
       const responseJson = await response.json();
-      if (responseJson.status === 'success') {
+
+
+      if (response.ok) {
+        console.log('✅ 회원가입 성공:', responseJson);
         Alert.alert('성공', '회원가입이 완료되었습니다.', [
-          { text: '로그인하기', onPress: () => navigation.navigate('LoginScreen') }
+          { text: '로그인하기', onPress: () => navigation.replace('LoginScreen') }
         ]);
       } else {
-        Alert.alert('실패', responseJson.message);
+        console.log('❌ 회원가입 실패:', responseJson);
+        Alert.alert('실패', responseJson.message || '회원가입에 실패했습니다.');
       }
     } catch (error) {
-      console.error('Registration Error:', error);
-      Alert.alert('에러', '회원가입 중 문제가 발생했습니다.');
+      console.error('❌ 서버 연결 오류:', error);
+      Alert.alert('에러', '서버와의 연결에 실패했습니다.');
     }
   };
 

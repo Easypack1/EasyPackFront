@@ -1,13 +1,7 @@
-// Example of Splash, Login and Sign Up in React Native
-// https://aboutreact.com/react-native-login-and-signup/
 import 'react-native-gesture-handler';
-
-// Import React and Component
 import React from 'react';
-
-// Import Navigators from React Navigation
-import {NavigationContainer} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 
 // Import Screens
 import SplashScreen from './Screen/SplashScreen';
@@ -16,9 +10,12 @@ import RegisterScreen from './Screen/RegisterScreen';
 import DrawerNavigationRoutes from './Screen/DrawerNavigationRoutes';
 import BackBtn from './Screen/Components/BackBtn';
 
+// Import Weather Component
+import Weather from './Screen/Components/Weather';  // 경로를 정확하게 수정
+
 const Stack = createStackNavigator();
 
-// Stack Navigator for Login and Register and Logout Screen
+// Stack Navigator for Login, Register and Logout Screen
 const Auth = () => {
   return (
     <Stack.Navigator>
@@ -44,7 +41,6 @@ const Auth = () => {
   );
 };
 
-
 const App = () => {
   return (
     <NavigationContainer>
@@ -53,21 +49,25 @@ const App = () => {
         <Stack.Screen
           name="SplashScreen"
           component={SplashScreen}
-          // Hiding header for Splash Screen
-          options={{headerShown: false}}
+          options={{ headerShown: false }}
         />
         {/* Auth Navigator: Include Login and Signup */}
         <Stack.Screen
           name="Auth"
           component={Auth}
-          options={{headerShown: false}}
+          options={{ headerShown: false }}
         />
         {/* Navigation Drawer as a landing page */}
         <Stack.Screen
           name="DrawerNavigationRoutes"
           component={DrawerNavigationRoutes}
-          // Hiding header for Navigation Drawer
-          options={{headerShown: false}}
+          options={{ headerShown: false }}
+        />
+        {/* Add Weather component as a screen */}
+        <Stack.Screen
+          name="Weather"
+          component={Weather}
+          options={{ title: '날씨 정보' }}  // title을 설정해서 화면 제목을 추가할 수 있음
         />
       </Stack.Navigator>
     </NavigationContainer>
@@ -75,3 +75,6 @@ const App = () => {
 };
 
 export default App;
+
+
+

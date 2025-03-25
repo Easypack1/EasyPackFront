@@ -78,7 +78,10 @@ const HomeScreen = ({ navigation }) => {
           </TouchableOpacity>
 
           {/* ✅ 여행지 날씨 버튼 */}
-          <TouchableOpacity style={[styles.button, styles.buttonBlue, styles.smallButton]}>
+          <TouchableOpacity 
+            style={[styles.button, styles.buttonBlue, styles.smallButton]}
+            onPress={() => navigation.navigate('Weather')}  // 여행지 날씨 화면으로 이동
+          >
             <Text style={styles.buttonTextBlack}>여행지 날씨</Text>
           </TouchableOpacity>
         </View>
@@ -214,3 +217,4 @@ const styles = StyleSheet.create({
 });
 
 export default HomeScreen;
+

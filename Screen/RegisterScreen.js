@@ -23,6 +23,7 @@ const RegisterScreen = ({ navigation }) => {
 
   // ✅ Step 2 State
   const [userId, setUserId] = useState('');
+  const [nickname, setNickname] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
 
@@ -84,9 +85,10 @@ const RegisterScreen = ({ navigation }) => {
   const handleRegister = async () => {
     const dataToSend = {
       user_id: userId,
+      nickname,
       password,
       country,
-      airline,
+      airline, 
       termsOfUse: terms.termsOfUse,
       privacyPolicy: terms.privacyPolicy,
       personalInfo: terms.personalInfo,
@@ -104,9 +106,10 @@ const RegisterScreen = ({ navigation }) => {
         body: JSON.stringify(dataToSend),
       });
 
+      // ✅ 응답의 Content-Type 확인
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
       const responseJson = await response.json();
-
-
       if (response.ok) {
         console.log('✅ 회원가입 성공:', responseJson);
         Alert.alert('성공', '회원가입이 완료되었습니다.', [
@@ -116,11 +119,17 @@ const RegisterScreen = ({ navigation }) => {
         console.log('❌ 회원가입 실패:', responseJson);
         Alert.alert('실패', responseJson.message || '회원가입에 실패했습니다.');
       }
-    } catch (error) {
-      console.error('❌ 서버 연결 오류:', error);
-      Alert.alert('에러', '서버와의 연결에 실패했습니다.');
+    } else {
+      // JSON이 아닌 경우 텍스트로 응답 처리
+      const textResponse = await response.text();
+      console.log('❌ 응답 오류:', textResponse);
+      Alert.alert('오류', textResponse || '서버에서 잘못된 응답을 받았습니다.');
     }
-  };
+  } catch (error) {
+    console.error('❌ 서버 연결 오류:', error.message);
+    Alert.alert('에러', '서버와의 연결에 실패했습니다.');
+  }
+};
 
   // ✅ 단계별 표시기 렌더링
   const renderProgressBar = () => {
@@ -188,6 +197,12 @@ const RegisterScreen = ({ navigation }) => {
             placeholder="아이디"
             value={userId}
             onChangeText={setUserId}
+          />
+           <TextInput
+            style={styles.input}
+            placeholder="닉네임"
+            value={nickname}
+            onChangeText={setNickname}
           />
           <TextInput
             style={styles.input}

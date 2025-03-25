@@ -9,9 +9,9 @@ import {
   Keyboard,
   TouchableOpacity,
   KeyboardAvoidingView,
+  Alert,
 } from 'react-native';
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Loader from './Components/loader';
 
 const LoginScreen = ({ navigation }) => {
@@ -23,7 +23,7 @@ const LoginScreen = ({ navigation }) => {
   const passwordInputRef = createRef();
 
   // ✅ 타임아웃 설정 함수 추가
-  const fetchWithTimeout = (url, options, timeout = 5000) => {
+  const fetchWithTimeout = (url, options, timeout = 10000) => {
     return Promise.race([
       fetch(url, options),
       new Promise((_, reject) =>
@@ -32,10 +32,10 @@ const LoginScreen = ({ navigation }) => {
     ]);
   };
 
-  // ✅ 로그인 처리 함수 수정
+  // ✅ 로그인 처리 함수 수정 (토큰 없이 처리)
   const handleSubmitPress = async () => {
     if (!userId || !userPassword) {
-      alert('아이디와 비밀번호를 입력해주세요.');
+      Alert.alert('알림', '아이디와 비밀번호를 입력해주세요.');
       return;
     }
 
@@ -54,27 +54,36 @@ const LoginScreen = ({ navigation }) => {
         }),
       });
 
-      const jsonResponse = await response.json();
+      // ✅ JSON 응답인지 확인 후 파싱
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const jsonResponse = await response.json();
 
-      if (response.ok) {
-        console.log('✅ 로그인 성공:', jsonResponse);
+        if (response.ok) {
+          console.log('✅ 로그인 성공:', jsonResponse);
 
-        // ✅ 성공 시 토큰 저장
-        await AsyncStorage.setItem('access_token', jsonResponse.token);
+          // ✅ 사용자 정보 출력 (예: 이름, 이메일 등)
+          console.log('사용자 정보:', jsonResponse);
 
-        console.log('✅ 토큰 저장 완료');
-
-        // ✅ 성공 시 홈 화면(DrawerNavigationRoutes)로 이동
-        navigation.replace('DrawerNavigationRoutes');
+          // ✅ 로그인 성공 후 다음 화면으로 이동
+          navigation.replace('DrawerNavigationRoutes', {
+            userData: jsonResponse, // 사용자 데이터 전달 가능
+          });
+        } else {
+          console.log('❌ 로그인 실패:', jsonResponse);
+          setErrortext(jsonResponse.message || '로그인에 실패했습니다.');
+        }
       } else {
-        console.log('❌ 로그인 실패:', jsonResponse);
-        setErrortext(jsonResponse.message || '로그인에 실패했습니다.');
+        // ✅ JSON 형식이 아닌 경우 텍스트 출력
+        const textResponse = await response.text();
+        console.error('❌ 서버 응답 오류:', textResponse);
+        setErrortext(textResponse || '서버 응답이 올바르지 않습니다.');
       }
     } catch (error) {
       console.error('❌ 서버 연결 오류:', error);
       setErrortext(error.message || '서버와의 연결에 실패했습니다.');
     } finally {
-      setLoading(false); // ✅ 로딩 상태 해제
+      setLoading(false);
     }
   };
 
@@ -142,6 +151,7 @@ const LoginScreen = ({ navigation }) => {
               <Text style={styles.errorTextStyle}>{errortext}</Text>
             ) : null}
 
+            {/* ✅ 로그인 버튼 */}
             <TouchableOpacity
               style={styles.buttonStyle}
               activeOpacity={0.5}

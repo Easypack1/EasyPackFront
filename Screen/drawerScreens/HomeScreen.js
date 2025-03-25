@@ -1,5 +1,19 @@
-import React from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity, TextInput, Image, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, SafeAreaView, TouchableOpacity, TextInput, Image, StyleSheet, ActivityIndicator } from 'react-native';
+import Fontisto from '@expo/vector-icons/Fontisto';
+
+const API_KEY = "dc421962c7495a4d3ad76358390c896c"; // 여기에 본인의 API 키 입력
+const TARGET_CITY = "Seoul"; // 특정 도시 이름 설정 (예: 도쿄)
+
+const icons = {
+  Clouds: "cloudy",
+  Clear: "day-sunny",
+  Atmosphere: "cloudy-gusts",
+  Snow: "snow",
+  Rain: "rains",
+  Drizzle: "rain",
+  Thunderstorm: "lightning",
+};
 
 const HomeScreen = ({ navigation }) => {
   // ✅ 메뉴 아이템 배열 → map으로 렌더링 처리
@@ -23,6 +37,38 @@ const HomeScreen = ({ navigation }) => {
       route: 'InfoScreenStack',
     },
   ];
+
+  // 날씨 상태와 데이터를 관리하는 상태 변수
+  const [city, setCity] = useState("Loading...");
+  const [days, setDays] = useState([]);
+  
+  // 날씨 정보 가져오는 함수
+  const getWeather = async () => {
+    try {
+      const response = await fetch(
+        `https://api.openweathermap.org/data/2.5/forecast?q=${TARGET_CITY}&appid=${API_KEY}&units=metric`
+      );
+      const data = await response.json();
+
+      if (data.cod !== "200") {
+        throw new Error(data.message);
+      }
+
+      setCity(data.city.name);
+      // 하루에 여러 번 데이터가 있는데 오전 3시 기준 데이터만 필터링
+      const filteredList = data.list.filter(({ dt_txt }) =>
+        dt_txt.endsWith("03:00:00")
+      );
+      setDays(filteredList);
+    } catch (error) {
+      console.error("Error fetching weather data:", error);
+    }
+  };
+
+  // 컴포넌트가 처음 렌더링 될 때 날씨 정보를 가져옴
+  useEffect(() => {
+    getWeather();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -61,30 +107,56 @@ const HomeScreen = ({ navigation }) => {
             </TouchableOpacity>
           ))}
         </View>
+      </View>
 
-        {/* 🔹 추가 버튼 */}
-        <View style={styles.buttonContainer}>
-          {/* ✅ 나의 항공사 규정 버튼 */}
-          <TouchableOpacity style={[styles.button, styles.buttonWhite]}>
-            <View style={styles.buttonContent}>
-              <Text style={styles.buttonTextGrey}>나의 항공사 규정 확인하러 가기</Text>
-              <Image source={require('../../Image/point.png')} style={styles.buttonImage} />
+      {/* 🔹 추가 버튼 */}
+      <View style={styles.buttonContainer}>
+        {/* ✅ 나의 항공사 규정 버튼 */}
+        <TouchableOpacity style={[styles.button, styles.buttonWhite]}>
+          <View style={styles.buttonContent}>
+            <Text style={styles.buttonTextGrey}>나의 항공사 규정 확인하러 가기</Text>
+            <Image source={require('../../Image/point.png')} style={styles.buttonImage} />
+          </View>
+        </TouchableOpacity>
+        
+        {/* ✅ 여행지 사진 버튼 */}
+        <TouchableOpacity style={[styles.button, styles.buttonBlue]}>
+          <Text style={styles.buttonTextBlack}>여행지 사진</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* 🔹 여행지 날씨 바로 아래 렌더링 */}
+      <View style={styles.weatherContainer}>
+        <Text style={styles.weatherTitle}>{city}</Text>
+        {days.length === 0 ? (
+          <ActivityIndicator color="white" style={{ marginTop: 10 }} size="large" />
+        ) : (
+          days.map((day, index) => (
+            <View key={index} style={styles.day}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  width: "100%",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Text style={styles.temp}>
+                  {parseFloat(day.main.temp).toFixed(1)}°
+                </Text>
+                <Fontisto
+                  name={icons[day.weather[0].main]}
+                  size={25} // 아이콘 크기도 적절히 줄여서 맞춰주세요
+                  color="black"
+                />
+              </View>
+              <Text style={styles.description}>{day.weather[0].main}</Text>
+              <Text style={styles.tinyText}>
+                {day.weather[0].description}
+              </Text>
             </View>
-          </TouchableOpacity>
-          
-          {/* ✅ 여행지 사진 버튼 */}
-          <TouchableOpacity style={[styles.button, styles.buttonBlue]}>
-            <Text style={styles.buttonTextBlack}>여행지 사진</Text>
-          </TouchableOpacity>
-
-          {/* ✅ 여행지 날씨 버튼 */}
-          <TouchableOpacity 
-            style={[styles.button, styles.buttonBlue, styles.smallButton]}
-            onPress={() => navigation.navigate('Weather')}  // 여행지 날씨 화면으로 이동
-          >
-            <Text style={styles.buttonTextBlack}>여행지 날씨</Text>
-          </TouchableOpacity>
-        </View>
+          ))
+        )}
       </View>
     </SafeAreaView>
   );
@@ -159,6 +231,40 @@ const styles = StyleSheet.create({
     color: '#333',
   },
 
+  // 🔹 날씨 섹션
+  weatherContainer: {
+    marginTop: 10,
+    width: '100%',
+    alignItems: 'center',
+  },
+  weatherTitle: {
+    fontSize: 15, // 제목 크기 줄이기
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  day: {
+    alignItems: 'flex-start',
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  temp: {
+    fontWeight: '600',
+    fontSize: 25, // 날씨 온도 크기 줄이기
+    color: 'black',
+  },
+  description: {
+    marginTop: -10,
+    fontSize: 20, // 날씨 설명 크기 줄이기
+    color: 'black',
+    fontWeight: '500',
+  },
+  tinyText: {
+    marginTop: -5,
+    fontSize: 10, // 날씨 세부 설명 크기 줄이기
+    color: 'black',
+    fontWeight: '500',
+  },
+
   // 🔹 버튼 공통 스타일
   buttonContainer: {
     alignItems: 'center',
@@ -178,9 +284,6 @@ const styles = StyleSheet.create({
   },
   buttonBlue: {
     backgroundColor: '#c8d7eb',
-  },
-  smallButton: {
-    height: 50,
   },
 
   buttonContent: {
@@ -217,4 +320,3 @@ const styles = StyleSheet.create({
 });
 
 export default HomeScreen;
-

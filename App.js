@@ -11,7 +11,7 @@ import DrawerNavigationRoutes from './Screen/DrawerNavigationRoutes';
 import BackBtn from './Screen/Components/BackBtn';
 
 // Import Weather Component
-import Weather from './Screen/Components/Weather';  // 경로를 정확하게 수정
+import Weather from './Screen/Components/Weather';  // ✅ Weather.js 추가
 
 const Stack = createStackNavigator();
 
@@ -45,29 +45,32 @@ const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="SplashScreen">
-        {/* SplashScreen which will come once for 5 Seconds */}
+        {/* ✅ SplashScreen (앱 실행 시 처음 나타나는 화면) */}
         <Stack.Screen
           name="SplashScreen"
           component={SplashScreen}
           options={{ headerShown: false }}
         />
-        {/* Auth Navigator: Include Login and Signup */}
+        
+        {/* ✅ 로그인 및 회원가입 화면 */}
         <Stack.Screen
           name="Auth"
           component={Auth}
           options={{ headerShown: false }}
         />
-        {/* Navigation Drawer as a landing page */}
+
+        {/* ✅ Drawer Navigation (메인 네비게이션) */}
         <Stack.Screen
           name="DrawerNavigationRoutes"
           component={DrawerNavigationRoutes}
           options={{ headerShown: false }}
         />
-        {/* Add Weather component as a screen */}
+
+        {/* ✅ 추가된 Weather 스크린 */}
         <Stack.Screen
           name="Weather"
           component={Weather}
-          options={{ title: '날씨 정보' }}  // title을 설정해서 화면 제목을 추가할 수 있음
+          options={{ title: '날씨 정보' }}  // 📌 "날씨 정보"라는 제목 표시
         />
       </Stack.Navigator>
     </NavigationContainer>
@@ -75,6 +78,7 @@ const App = () => {
 };
 
 export default App;
+
 
 
 

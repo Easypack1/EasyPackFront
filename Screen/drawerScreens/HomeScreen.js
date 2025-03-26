@@ -3,7 +3,6 @@ import { View, Text, SafeAreaView, TouchableOpacity, TextInput, Image, StyleShee
 import Fontisto from '@expo/vector-icons/Fontisto';
 
 const API_KEY = "dc421962c7495a4d3ad76358390c896c"; // 여기에 본인의 API 키 입력
-const TARGET_CITY = "Seoul"; // 특정 도시 이름 설정 (예: 도쿄)
 
 const icons = {
   Clouds: "cloudy",
@@ -66,9 +65,24 @@ const HomeScreen = ({ route, navigation }) => {
 
   // 날씨 정보 가져오는 함수
   const getWeather = async () => {
+    let cityName='';
+     // travelDestination 값에 따라 cityName 설정
+  switch (travelDestination) {
+    case 'vietnam':
+      cityName = 'Hanoi'; break;
+    case 'usa':
+      cityName = 'New York'; break;
+    case 'japan':
+      cityName = 'Tokyo'; break;
+    case 'thailand':
+      cityName = 'Bangkok'; break;
+    case 'philippines':
+      cityName = 'Manila'; break;
+  }
+
     try {
       const response = await fetch(
-        `https://api.openweathermap.org/data/2.5/forecast?q=${TARGET_CITY}&appid=${API_KEY}&units=metric`
+        `https://api.openweathermap.org/data/2.5/forecast?q=${cityName}&appid=${API_KEY}&units=metric`
       );
       const data = await response.json();
 
@@ -89,8 +103,10 @@ const HomeScreen = ({ route, navigation }) => {
 
   // 컴포넌트가 처음 렌더링 될 때 날씨 정보를 가져옴
   useEffect(() => {
+    if(travelDestination){
     getWeather();
-  }, []);
+    }
+  }, [travelDestination]);
 
   return (
     <SafeAreaView style={styles.container}>

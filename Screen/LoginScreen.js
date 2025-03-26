@@ -68,6 +68,7 @@ const LoginScreen = ({ navigation }) => {
           // ✅ 로그인 성공 후 다음 화면으로 이동
           navigation.replace('DrawerNavigationRoutes', {
             userData: jsonResponse, // 사용자 데이터 전달
+            travelDestination: jsonResponse.travelDestination, // ✅ travelDestination 함께 전달
           });
         } else {
           console.log('❌ 로그인 실패:', jsonResponse);

@@ -17,7 +17,14 @@ const icons = {
 
 const HomeScreen = ({ route, navigation }) => {
   // route.params가 없을 경우 빈 객체로 처리
-  const { travelDestination } = route.params || {}; 
+  const [travelDestination, setTravelDestination] = useState('');
+
+  useEffect(() => {
+    console.log('🏡 HomeScreen 받은 travelDestination:', route.params?.travelDestination);
+    if (route.params?.travelDestination) {
+      setTravelDestination(route.params.travelDestination);
+    }
+  }, [route.params]);
 
   // ✅ 여행지에 맞는 배경 이미지 가져오기
   const getBackgroundImage = () => {
@@ -27,7 +34,7 @@ const HomeScreen = ({ route, navigation }) => {
       case 'japan': return require('../../Image/japan.jpeg');
       case 'thailand': return require('../../Image/thailand.jpeg');
       case 'philippines': return require('../../Image/philippines.jpeg');
-      default: return require('../../Image/default.jpeg');
+    
     }
   };
 

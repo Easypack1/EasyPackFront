@@ -20,14 +20,15 @@ const Drawer = createDrawerNavigator();
 
 // ✅ 공통 Stack 생성 함수
 const createScreenStack = (name, component, navigationTitle) => {
-  return ({ navigation }) => (
+  return ({ navigation, route }) => (
     <Stack.Navigator>
       <Stack.Screen
         name={name}
         component={component}
+        initialParams={route.params} // ✅ 여기서 전달!!
         options={{
           title: navigationTitle,
-          headerLeft: () => <BackBtn onPress={() => navigation.goBack()} />, // ✅ 뒤로 가기 버튼 처리
+          headerLeft: () => <BackBtn onPress={() => navigation.goBack()} />,
           headerStyle: {
             backgroundColor: '#307ecc',
           },
@@ -41,24 +42,24 @@ const createScreenStack = (name, component, navigationTitle) => {
   );
 };
 
-const DrawerNavigatorRoutes = () => {
+
+const DrawerNavigatorRoutes = ({route}) => {
+  console.log('🚪 Drawer로 넘어온 params:', route?.params);
   return (
     <Drawer.Navigator
       screenOptions={{
         drawerActiveTintColor: '#cee1f2',
         drawerInactiveTintColor: '#d8d8d8',
         drawerStyle: { backgroundColor: '#1f1f1f' },
-        headerShown: false, // ✅ Drawer의 기본 헤더 숨김
+        headerShown: false,
       }}
       drawerContent={(props) => <CustomSidebarMenu {...props} />}
     >
-      {/* ✅ 홈 스크린 */}
       <Drawer.Screen
         name="HomeScreenStack"
-        options={{
-          drawerLabel: 'Home',
-        }}
+        options={{ drawerLabel: 'Home' }}
         component={createScreenStack('HomeScreen', HomeScreen, 'Home')}
+        initialParams={{ travelDestination: route.params?.travelDestination }} // ✅ 여기에 travelDestination 전달
       />
 
       {/* ✅ 설정 스크린 */}

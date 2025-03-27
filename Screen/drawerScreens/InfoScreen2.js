@@ -10,32 +10,27 @@ const InfoScreen = () => {
   };
 
   const sections = [
-    { title: '발화성/인화성 물질', content: '휘발유, 페인트, 라이터용 연료 등 발화성/인화성 물질' },
-    { title: '고압가스 용기', content: '부탄가스캔 등 고압가스 용기' },
-    { title: '무기 및 폭발물 종류', content: '총기, 폭죽 등 무기 및 폭발물 종류' },
-    { title: '기타 위험 물질', content: '소화기, 에어로졸(살충제 등), 락스 등 탑승객 및 항공기에 위험이 될 가능성이 있는 물질' },
+    { title: '액체류 (국제선 출발, 환승에 한함)', content: `• 음료, 식품, 화장품 등 액체류(스프레이) 및 젤류(젤 또는 크림) 물품
+      • 개별 용기당 100ml 이하로 1인당 총 1L 용량의 비닐 지퍼백 1개` },
+    { title: '의약품', content: '여행 중 필요한 개인용 의약품' },
+    { title: 'MacBook 배터리 리콜 대상', content: '배터리 화재 위험이 있는 MacBook Pro (Retina, 15-inch, Mid 2015) 중 리콜하여 수리되지 않은 일부 제품은 국가/공항에 따라 항공기 운송(휴대/위탁) 금지 또는 휴대만 가능' },
     { 
-      title: '리튬 배터리 장착 전자기기', 
-      content: `• 배터리 용량 160Wh 초과의 리튬 배터리가 장착된 전자기기
-        → 전동휠체어 등의 교통약자용 보행 보조기구는 예외
-      • 배터리 용량 160Wh 초과의 보조/여분의 리튬 배터리
-      • 리튬 배터리가 분리되지 않는 일체형 전동 휠, 스마트 가방
-        → 단, 배터리를 분리할 수 있으며 용량이 160Wh 이하인 경우는 배터리 분리하여 배터리 휴대 (기내 사용 금지 및 전원 off)
-        → 전동휠체어 등의 교통약자용 보행 보조기구는 예외
-      • 배터리 분리가 불가한 헤어컬(고데기)
-        → 일본 출발편 한정`
+        title: '기타',  content: `• 1인당 2.5kg 이하의 드라이아이스
+        - 항공사의 승인을 받은 의료용품
+      • 1인당 12oz(350ml) 이하의 파우더류 물품 (미국 출도착편 및 호주 출발편)`
     }
+
   ];
 
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>운송 제한 물품</Text>
       <View style={styles.row}>
-        <Text style={styles.item}>항공기 반입 금지 물품</Text>
+        <Text style={styles.item}>제한적 기내 반입 물품</Text>
       </View>
       <Text style={styles.description}>
-        아래 품목은 휴대 수하물로 기내 반입하거나 위탁 수하물로 운송하는 것이 금지되어 있습니다.
-        <Text style={styles.warning}> (휴대 X, 위탁 X)</Text>
+      아래 품목은 기내로 소량 반입할 수 있습니다.
+        <Text style={styles.warning}> (휴대 △, 위탁 O)</Text>
       </Text>
 
       {/* 아코디언 버튼 리스트 */}

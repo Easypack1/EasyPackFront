@@ -43,7 +43,7 @@ const LoginScreen = ({ navigation }) => {
     setErrortext('');
 
     try {
-      const response = await fetchWithTimeout('http://3.106.58.164:8082/api/auth/login', {
+      const response = await fetchWithTimeout('http://54.153.203.196:8082/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

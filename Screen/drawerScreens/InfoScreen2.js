@@ -22,21 +22,27 @@ const InfoScreen = () => {
   → 항공사의 승인을 받은 의료용품
 • 1인당 12oz(350ml) 이하의 파우더류 물품 (미국 출도착편 및 호주 출발편)`
     }
-
   ];
 
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>운송 제한 물품</Text>
-      <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('InfoScreenStack')}>
-        <AntDesign name="caretleft" size={24} color="black" />
-        <Text style={styles.item}>항공기 반입 금지 물품</Text>
+      
+      {/* 🔹 수평 정렬된 네비게이션 버튼 */}
+      <View style={styles.row}>
+        <TouchableOpacity onPress={() => navigation.navigate('InfoScreenStack')}>
+          <AntDesign name="caretleft" size={24} color="black" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('InfoScreen3Stack')}>
-        <AntDesign name="caretright" size={24} color="black" />
-      </TouchableOpacity>
+
+        <Text style={styles.item}>제한적 기내 반입 물품</Text>
+
+        <TouchableOpacity onPress={() => navigation.navigate('InfoScreen3Stack')}>
+          <AntDesign name="caretright" size={24} color="black" />
+        </TouchableOpacity>
+      </View>
+
       <Text style={styles.description}>
-      아래 품목은 기내로 소량 반입할 수 있습니다.
+        아래 품목은 기내로 소량 반입할 수 있습니다.
         <Text style={styles.warning}> (휴대 △, 위탁 O)</Text>
       </Text>
 
@@ -78,13 +84,15 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-between', // 🔹 양쪽 정렬
+    alignItems: 'center', // 🔹 수직 중앙 정렬
     marginTop: 30,
+    paddingHorizontal: 20, // 🔹 좌우 여백 추가
   },
   item: {
     fontSize: 20,
-    marginHorizontal: 5,
     fontWeight: 'bold',
+    textAlign: 'center', // 🔹 텍스트 중앙 정렬
   },
   description: {
     fontSize: 16,
@@ -123,21 +131,19 @@ const styles = StyleSheet.create({
     color: '#333',
     lineHeight: 22,
   },
-  // 새로운 스타일 추가
   noticeContainer: {
-    marginTop: 40, // 아코디언 버튼 밑에 여백 추가
+    marginTop: 40,
   },
   noticeTitle: {
     fontSize: 18,
-    color: 'navy', // 남색
+    color: 'navy',
     fontWeight: 'bold',
   },
   noticeText: {
     fontSize: 14,
-    color: '#333', // 검정색
+    color: '#333',
     marginTop: 10,
   },
 });
 
 export default InfoScreen;
-

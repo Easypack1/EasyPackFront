@@ -85,11 +85,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 30,
     alignItems: 'center',
+    
   },
   item: {
     fontSize: 20,
-    marginHorizontal: 5,
+    marginHorizontal: 65,
     fontWeight: 'bold',
+    textAlign: 'center',
+    
   },
   description: {
     fontSize: 16,

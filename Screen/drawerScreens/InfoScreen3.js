@@ -43,7 +43,7 @@ const InfoScreen = () => {
       <Text style={styles.title}>운송 제한 물품</Text>
       <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('InfoScreen2Stack')}>
       <AntDesign name="caretleft" size={24} color="black" />
-        <Text style={styles.item}>항공기 반입 금지 물품</Text>
+        <Text style={styles.item}>위탁 수하물 제한 물품</Text>
               </TouchableOpacity>
       <Text style={styles.description}>
       아래 품목은 수하물로 위탁할 수 없으므로, 직접 휴대해 주세요.
@@ -93,8 +93,9 @@ const styles = StyleSheet.create({
   },
   item: {
     fontSize: 20,
-    marginHorizontal: 5,
+    marginHorizontal: 65,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   description: {
     fontSize: 16,

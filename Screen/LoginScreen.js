@@ -1,4 +1,5 @@
 import React, { useState, createRef } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   StyleSheet,
   TextInput,
@@ -65,11 +66,15 @@ const LoginScreen = ({ navigation }) => {
           // ✅ 사용자 정보 출력
           console.log('사용자 정보:', jsonResponse);
 
-          // ✅ 로그인 성공 후 다음 화면으로 이동
-          navigation.replace('DrawerNavigationRoutes', {
-            userData: jsonResponse, // 사용자 데이터 전달
-            travelDestination: jsonResponse.travelDestination, // ✅ travelDestination 함께 전달
-          });
+        // ✅ 로그인 성공 후 userId 저장
+        await AsyncStorage.setItem('userId', jsonResponse.userId); // userId는 testuser1 같은 값
+
+        // ✅ 다음 화면으로 이동
+        navigation.replace('DrawerNavigationRoutes', {
+         userData: jsonResponse,
+         travelDestination: jsonResponse.travelDestination,
+        });
+
         } else {
           console.log('❌ 로그인 실패:', jsonResponse);
           setErrortext(jsonResponse.message || '로그인에 실패했습니다.');

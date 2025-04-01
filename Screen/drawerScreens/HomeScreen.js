@@ -15,15 +15,28 @@ const icons = {
 };
 
 const HomeScreen = ({ route, navigation }) => {
-  // route.params가 없을 경우 빈 객체로 처리
-  const [travelDestination, setTravelDestination] = useState('');
-
+  const {
+    travelDestination,
+    userData = {}, // userData가 undefined일 경우를 대비해 기본값 설정
+  } = route.params || {};
+  
+  const {
+    id,
+    password,
+    nickname,
+    airline,
+    userId,
+  } = userData;
+  
   useEffect(() => {
-    console.log('🏡 HomeScreen 받은 travelDestination:', route.params?.travelDestination);
-    if (route.params?.travelDestination) {
-      setTravelDestination(route.params.travelDestination);
-    }
-  }, [route.params]);
+    console.log('🏡 받은 사용자 정보:', {
+      id,
+      password,
+      nickname,
+      travelDestination,
+      airline,
+    });
+  }, []);
 
   // ✅ 여행지에 맞는 배경 이미지 가져오기
   const getBackgroundImage = () => {
@@ -111,9 +124,12 @@ const HomeScreen = ({ route, navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       {/* 🔹 상단 프로필 아이콘 */}
-      <View style={styles.topRightImageContainer}>
-        <Image source={require('../../Image/usericon.png')} style={styles.topRightImage} />
-      </View>
+      <TouchableOpacity 
+  style={styles.topRightImageContainer} 
+  onPress={() => navigation.navigate('SettingsScreenStack')}
+>
+  <Image source={require('../../Image/usericon.png')} style={styles.topRightImage} />
+</TouchableOpacity>
 
       {/* 🔹 제목 */}
       <View style={styles.content}>

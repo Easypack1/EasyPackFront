@@ -44,7 +44,8 @@ const createScreenStack = (name, component, navigationTitle) => {
 
 
 const DrawerNavigatorRoutes = ({route}) => {
-  console.log('🚪 Drawer로 넘어온 params:', route?.params);
+  const userParams = route?.params || {};
+  console.log('🚪 Drawer로 넘어온 params:', userParams);
   return (
     <Drawer.Navigator
       screenOptions={{
@@ -59,12 +60,12 @@ const DrawerNavigatorRoutes = ({route}) => {
         name="HomeScreenStack"
         options={{ drawerLabel: 'Home' }}
         component={createScreenStack('HomeScreen', HomeScreen, 'Home')}
-        initialParams={{ travelDestination: route.params?.travelDestination }} // ✅ 여기에 travelDestination 전달
+        initialParams={userParams} // 전체 파라미터 전달
       />
 
       {/* ✅ 설정 스크린 */}
       <Drawer.Screen
-        name="SettingScreenStack"
+        name="SettingsScreenStack"
         options={{
           drawerLabel: 'Settings',
         }}

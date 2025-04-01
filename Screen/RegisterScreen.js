@@ -94,7 +94,7 @@ const RegisterScreen = ({ navigation }) => {
     console.log('📢 전송 데이터:', dataToSend);
 
     try {
-      const response = await fetch('http://54.153.203.196:8082/api/auth/register', {
+      const response = await fetch('http://13.236.230.193:8082/api/auth/register', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json'

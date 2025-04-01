@@ -7,37 +7,47 @@ import { useNavigation } from '@react-navigation/native';
 const InfoScreen = () => {
   const [activeIndex, setActiveIndex] = useState(null);
   const navigation = useNavigation(); // 네비게이션 객체 가져오기
-
+  
   const toggleSection = (index) => {
     setActiveIndex(activeIndex === index ? null : index);
   };
 
   const sections = [
-    { title: '액체류 (국제선 출발, 환승에 한함)', content: `• 음료, 식품, 화장품 등 액체류(스프레이) 및 젤류(젤 또는 크림) 물품
-• 개별 용기당 100ml 이하로 1인당 총 1L 용량의 비닐 지퍼백 1개` },
-    { title: '의약품', content: '여행 중 필요한 개인용 의약품' },
-    { title: 'MacBook 배터리 리콜 대상', content: '배터리 화재 위험이 있는 MacBook Pro (Retina, 15-inch, Mid 2015) 중 리콜하여 수리되지 않은 일부 제품은 국가/공항에 따라 항공기 운송(휴대/위탁) 금지 또는 휴대만 가능' },
+    { title: '파손 또는 손상되기 쉬운 물품', content: '도자기, 액자, 유리제품 등' },
+    { title: '고가품 및 귀중품', content: '화폐, 보석, 현금, 유가증권, 견본, 서류, 전자제품 등' },
+    { title: '여객기로 운송 가능한 휴대용 전자기기의 보조/여분 배터리는 휴대만 가능', content: '니켈수소, 니켈카드뮴, 망간 등' },
     { 
-        title: '기타',  content: `• 1인당 2.5kg 이하의 드라이아이스
-  → 항공사의 승인을 받은 의료용품
-• 1인당 12oz(350ml) 이하의 파우더류 물품 (미국 출도착편 및 호주 출발편)`
+      title: '보조/여분 리튬배터리', 
+      content: `• 배터리 용량이 160Wh 이하이며 단락 방지 포장된 여분/보조 배터리
+  →100Wh 이하 배터리 : 1인 5개 제한
+  →100Wh 초과 160Wh 이하 배터리 : 1인 2개 제한 (항공사 승인을 위해 체크인 카운터 방문 필요)
+      * 배터리 용량이 상기 조건을 초과하거나 확인이 불가할 경우 운송이 거절될 수 있습니다. (위탁, 휴대 모두 불가)
+      * 해외 출발편의 경우 공항/국가별 별도의 강화된 규정이 적용될 수 있습니다.
+• 배터리는 절연테이프 처리 또는 1개당 1개의 지퍼형 투명 비닐백(개별 준비)에 지입 후 직접 휴대해야 하며, 기내 선반에 보관하는 것은 엄격히 금지됩니다.`
+    },
+    { 
+      title: '라이터/전자담배', 
+      content: `• 1인당 1개 이하의 라이터 및 안전성냥
+  → 라이터는 반드시 몸에 소지 (휴대 가방 내 지입 불가)
+  → 토치라이터, 플라즈마 라이터는 항공기 반입 금지
+  → 중국 출발편의 경우 휴대/위탁 모두 불가
+• 배터리 용량이 100Wh 이하인 전자담배
+  → 기내에서 충전/사용 및 기내 선반 보관 금지`
     }
+    
 
   ];
 
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>운송 제한 물품</Text>
-      <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('InfoScreenStack')}>
-        <AntDesign name="caretleft" size={24} color="black" />
+      <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('InfoScreen2Stack')}>
+      <AntDesign name="caretleft" size={24} color="black" />
         <Text style={styles.item}>항공기 반입 금지 물품</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('InfoScreen3Stack')}>
-        <AntDesign name="caretright" size={24} color="black" />
-      </TouchableOpacity>
+              </TouchableOpacity>
       <Text style={styles.description}>
-      아래 품목은 기내로 소량 반입할 수 있습니다.
-        <Text style={styles.warning}> (휴대 △, 위탁 O)</Text>
+      아래 품목은 수하물로 위탁할 수 없으므로, 직접 휴대해 주세요.
+        <Text style={styles.warning}> (휴대 O, 위탁 X)</Text>
       </Text>
 
       {/* 아코디언 버튼 리스트 */}

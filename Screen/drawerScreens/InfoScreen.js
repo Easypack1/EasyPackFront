@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import Collapsible from 'react-native-collapsible';
+import AntDesign from '@expo/vector-icons/AntDesign';
+
+import { useNavigation } from '@react-navigation/native'; // 추가
 
 const InfoScreen = () => {
   const [activeIndex, setActiveIndex] = useState(null);
+  const navigation = useNavigation(); // 네비게이션 객체 가져오기
 
   const toggleSection = (index) => {
     setActiveIndex(activeIndex === index ? null : index);
@@ -17,22 +21,24 @@ const InfoScreen = () => {
     { 
       title: '리튬 배터리 장착 전자기기', 
       content: `• 배터리 용량 160Wh 초과의 리튬 배터리가 장착된 전자기기
-        → 전동휠체어 등의 교통약자용 보행 보조기구는 예외
-      • 배터리 용량 160Wh 초과의 보조/여분의 리튬 배터리
-      • 리튬 배터리가 분리되지 않는 일체형 전동 휠, 스마트 가방
-        → 단, 배터리를 분리할 수 있으며 용량이 160Wh 이하인 경우는 배터리 분리하여 배터리 휴대 (기내 사용 금지 및 전원 off)
-        → 전동휠체어 등의 교통약자용 보행 보조기구는 예외
-      • 배터리 분리가 불가한 헤어컬(고데기)
-        → 일본 출발편 한정`
+  → 전동휠체어 등의 교통약자용 보행 보조기구는 예외
+• 배터리 용량 160Wh 초과의 보조/여분의 리튬 배터리
+• 리튬 배터리가 분리되지 않는 일체형 전동 휠, 스마트 가방
+  → 단, 배터리를 분리할 수 있으며 용량이 160Wh 이하인 경우는 배터리 분리하여 배터리 휴대 (기내 사용 금지 및 전원 off)
+  → 전동휠체어 등의 교통약자용 보행 보조기구는 예외
+• 배터리 분리가 불가한 헤어컬(고데기)
+  → 일본 출발편 한정`
     }
   ];
 
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>운송 제한 물품</Text>
-      <View style={styles.row}>
+      <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('InfoScreen2Stack')}>
         <Text style={styles.item}>항공기 반입 금지 물품</Text>
-      </View>
+        <AntDesign name="caretright" size={24} color="black" />
+      </TouchableOpacity>
+      
       <Text style={styles.description}>
         아래 품목은 휴대 수하물로 기내 반입하거나 위탁 수하물로 운송하는 것이 금지되어 있습니다.
         <Text style={styles.warning}> (휴대 X, 위탁 X)</Text>
@@ -78,6 +84,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: 30,
+    alignItems: 'center',
   },
   item: {
     fontSize: 20,
@@ -121,21 +128,19 @@ const styles = StyleSheet.create({
     color: '#333',
     lineHeight: 22,
   },
-  // 새로운 스타일 추가
   noticeContainer: {
-    marginTop: 40, // 아코디언 버튼 밑에 여백 추가
+    marginTop: 40,
   },
   noticeTitle: {
     fontSize: 18,
-    color: 'navy', // 남색
+    color: 'navy',
     fontWeight: 'bold',
   },
   noticeText: {
     fontSize: 14,
-    color: '#333', // 검정색
+    color: '#333',
     marginTop: 10,
   },
 });
 
 export default InfoScreen;
-

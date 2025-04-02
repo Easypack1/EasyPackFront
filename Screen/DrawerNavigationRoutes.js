@@ -11,8 +11,6 @@ import InfoScreen3 from './drawerScreens/InfoScreen3';
 import CustomSidebarMenu from './Components/CustomSidebarMenu';
 import BackBtn from './Components/BackBtn';
 
-// ❌ import { NavigationContainer } from '@react-navigation/native';  // ❌ 삭제
-
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
 
@@ -27,7 +25,7 @@ const createScreenStack = (name, Component, navigationTitle) => {
           name={name}
           options={{
             title: navigationTitle,
-            headerLeft: () => <BackBtn onPress={() => navigation.goBack()} />,
+            headerLeft: name === 'HomeScreen' ? undefined : () => <BackBtn onPress={() => navigation.goBack()} />, // HomeScreen만 백버튼 제거
             headerStyle: {
               backgroundColor: '#307ecc',
             },
@@ -55,9 +53,6 @@ const createScreenStack = (name, Component, navigationTitle) => {
   };
 };
 
-
-
-
 const DrawerNavigatorRoutes = ({route}) => {
   const userParams = route?.params || {};
   console.log('🚪 Drawer로 넘어온 params:', userParams);
@@ -76,17 +71,11 @@ const DrawerNavigatorRoutes = ({route}) => {
         name="HomeScreenStack"
         options={{ drawerLabel: 'Home' }}
         component={createScreenStack('HomeScreen', HomeScreen, 'Home')}
-
         initialParams={userParams} // 전체 파라미터 전달
-
       />
       <Drawer.Screen
-
         name="SettingsScreenStack"
-        options={{
-          drawerLabel: 'Settings',
-        }}
-
+        options={{ drawerLabel: 'Settings' }}
         component={createScreenStack('SettingsScreen', SettingsScreen, 'Settings')}
       />
       <Drawer.Screen
@@ -108,13 +97,12 @@ const DrawerNavigatorRoutes = ({route}) => {
         name="InfoScreen2Stack"
         options={{ drawerLabel: 'Info 2' }}
         component={createScreenStack('InfoScreen2', InfoScreen2, 'Info 2')}
-/>
-<Drawer.Screen
+      />
+      <Drawer.Screen
         name="InfoScreen3Stack"
         options={{ drawerLabel: 'Info 3' }}
         component={createScreenStack('InfoScreen3', InfoScreen3, 'Info 3')}
-/>
-
+      />
     </Drawer.Navigator>
   );
 };

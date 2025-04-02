@@ -123,10 +123,13 @@ const HomeScreen = ({ route, navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* 🔹 상단 프로필 아이콘 */}
-      <TouchableOpacity 
-  style={styles.topRightImageContainer} 
-  onPress={() => navigation.navigate('SettingsScreenStack')}
+  <TouchableOpacity 
+    style={styles.topRightImageContainer} 
+    onPress={() =>
+    navigation.navigate('SettingsScreenStack', {
+      userData: userData, // ✅ 전달 추가
+    })
+  }
 >
   <Image source={require('../../Image/usericon.png')} style={styles.topRightImage} />
 </TouchableOpacity>

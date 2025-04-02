@@ -2,46 +2,52 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import Collapsible from 'react-native-collapsible';
 import AntDesign from '@expo/vector-icons/AntDesign';
-
-import { useNavigation } from '@react-navigation/native'; // 추가
+import { useNavigation } from '@react-navigation/native';
 
 const InfoScreen = () => {
   const [activeIndex, setActiveIndex] = useState(null);
   const navigation = useNavigation(); // 네비게이션 객체 가져오기
-
+  
   const toggleSection = (index) => {
     setActiveIndex(activeIndex === index ? null : index);
   };
 
   const sections = [
-    { title: '발화성/인화성 물질', content: '휘발유, 페인트, 라이터용 연료 등 발화성/인화성 물질' },
-    { title: '고압가스 용기', content: '부탄가스캔 등 고압가스 용기' },
-    { title: '무기 및 폭발물 종류', content: '총기, 폭죽 등 무기 및 폭발물 종류' },
-    { title: '기타 위험 물질', content: '소화기, 에어로졸(살충제 등), 락스 등 탑승객 및 항공기에 위험이 될 가능성이 있는 물질' },
+    { title: '파손 또는 손상되기 쉬운 물품', content: '도자기, 액자, 유리제품 등' },
+    { title: '고가품 및 귀중품', content: '화폐, 보석, 현금, 유가증권, 견본, 서류, 전자제품 등' },
+    { title: '여객기로 운송 가능한 휴대용 전자기기의 보조/여분 배터리는 휴대만 가능', content: '니켈수소, 니켈카드뮴, 망간 등' },
     { 
-      title: '리튬 배터리 장착 전자기기', 
-      content: `• 배터리 용량 160Wh 초과의 리튬 배터리가 장착된 전자기기
-  → 전동휠체어 등의 교통약자용 보행 보조기구는 예외
-• 배터리 용량 160Wh 초과의 보조/여분의 리튬 배터리
-• 리튬 배터리가 분리되지 않는 일체형 전동 휠, 스마트 가방
-  → 단, 배터리를 분리할 수 있으며 용량이 160Wh 이하인 경우는 배터리 분리하여 배터리 휴대 (기내 사용 금지 및 전원 off)
-  → 전동휠체어 등의 교통약자용 보행 보조기구는 예외
-• 배터리 분리가 불가한 헤어컬(고데기)
-  → 일본 출발편 한정`
+      title: '보조/여분 리튬배터리', 
+      content: `• 배터리 용량이 160Wh 이하이며 단락 방지 포장된 여분/보조 배터리
+  →100Wh 이하 배터리 : 1인 5개 제한
+  →100Wh 초과 160Wh 이하 배터리 : 1인 2개 제한 (항공사 승인을 위해 체크인 카운터 방문 필요)
+      * 배터리 용량이 상기 조건을 초과하거나 확인이 불가할 경우 운송이 거절될 수 있습니다. (위탁, 휴대 모두 불가)
+      * 해외 출발편의 경우 공항/국가별 별도의 강화된 규정이 적용될 수 있습니다.
+• 배터리는 절연테이프 처리 또는 1개당 1개의 지퍼형 투명 비닐백(개별 준비)에 지입 후 직접 휴대해야 하며, 기내 선반에 보관하는 것은 엄격히 금지됩니다.`
+    },
+    { 
+      title: '라이터/전자담배', 
+      content: `• 1인당 1개 이하의 라이터 및 안전성냥
+  → 라이터는 반드시 몸에 소지 (휴대 가방 내 지입 불가)
+  → 토치라이터, 플라즈마 라이터는 항공기 반입 금지
+  → 중국 출발편의 경우 휴대/위탁 모두 불가
+• 배터리 용량이 100Wh 이하인 전자담배
+  → 기내에서 충전/사용 및 기내 선반 보관 금지`
     }
+    
+
   ];
 
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>운송 제한 물품</Text>
       <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('InfoScreen2Stack')}>
-        <Text style={styles.item}>항공기 반입 금지 물품</Text>
-        <AntDesign name="caretright" size={24} color="black" />
-      </TouchableOpacity>
-      
+      <AntDesign name="caretleft" size={24} color="black" />
+        <Text style={styles.item}>위탁 수하물 제한 물품</Text>
+              </TouchableOpacity>
       <Text style={styles.description}>
-        아래 품목은 휴대 수하물로 기내 반입하거나 위탁 수하물로 운송하는 것이 금지되어 있습니다.
-        <Text style={styles.warning}> (휴대 X, 위탁 X)</Text>
+      아래 품목은 수하물로 위탁할 수 없으므로, 직접 휴대해 주세요.
+        <Text style={styles.warning}> (휴대 O, 위탁 X)</Text>
       </Text>
 
       {/* 아코디언 버튼 리스트 */}
@@ -84,15 +90,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: 30,
-    alignItems: 'center',
-    
   },
   item: {
     fontSize: 20,
     marginHorizontal: 65,
     fontWeight: 'bold',
     textAlign: 'center',
-    
   },
   description: {
     fontSize: 16,
@@ -131,19 +134,21 @@ const styles = StyleSheet.create({
     color: '#333',
     lineHeight: 22,
   },
+  // 새로운 스타일 추가
   noticeContainer: {
-    marginTop: 40,
+    marginTop: 40, // 아코디언 버튼 밑에 여백 추가
   },
   noticeTitle: {
     fontSize: 18,
-    color: 'navy',
+    color: 'navy', // 남색
     fontWeight: 'bold',
   },
   noticeText: {
     fontSize: 14,
-    color: '#333',
+    color: '#333', // 검정색
     marginTop: 10,
   },
 });
 
 export default InfoScreen;
+

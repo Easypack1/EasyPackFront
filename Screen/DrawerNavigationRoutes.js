@@ -1,31 +1,29 @@
-// Import React
 import React from 'react';
-
-// Import Navigators from React Navigation
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-
-// Import Screens
 import HomeScreen from './drawerScreens/HomeScreen';
 import SettingsScreen from './drawerScreens/SettingsScreen';
 import CameraScreen from './drawerScreens/CameraScreen';
 import CommunityScreen from './drawerScreens/CommunityScreen';
 import InfoScreen from './drawerScreens/InfoScreen';
-
+import InfoScreen2 from './drawerScreens/InfoScreen2';
+import InfoScreen3 from './drawerScreens/InfoScreen3';
 import CustomSidebarMenu from './Components/CustomSidebarMenu';
 import BackBtn from './Components/BackBtn';
+
+// ❌ import { NavigationContainer } from '@react-navigation/native';  // ❌ 삭제
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
 
-// ✅ 공통 Stack 생성 함수
+// ✅ Stack 생성 함수 (NavigationContainer 제거)
 const createScreenStack = (name, component, navigationTitle) => {
   return ({ navigation, route }) => (
     <Stack.Navigator>
       <Stack.Screen
         name={name}
         component={component}
-        initialParams={route.params} // ✅ 여기서 전달!!
+        initialParams={route.params}
         options={{
           title: navigationTitle,
           headerLeft: () => <BackBtn onPress={() => navigation.goBack()} />,
@@ -43,9 +41,11 @@ const createScreenStack = (name, component, navigationTitle) => {
 };
 
 
+
 const DrawerNavigatorRoutes = ({route}) => {
   const userParams = route?.params || {};
   console.log('🚪 Drawer로 넘어온 params:', userParams);
+
   return (
     <Drawer.Navigator
       screenOptions={{
@@ -60,44 +60,45 @@ const DrawerNavigatorRoutes = ({route}) => {
         name="HomeScreenStack"
         options={{ drawerLabel: 'Home' }}
         component={createScreenStack('HomeScreen', HomeScreen, 'Home')}
-        initialParams={userParams} // 전체 파라미터 전달
-      />
 
-      {/* ✅ 설정 스크린 */}
+        initialParams={userParams} // 전체 파라미터 전달
+
+      />
       <Drawer.Screen
+
         name="SettingsScreenStack"
         options={{
           drawerLabel: 'Settings',
         }}
+
         component={createScreenStack('SettingsScreen', SettingsScreen, 'Settings')}
       />
-
-      {/* ✅ 카메라 스크린 */}
       <Drawer.Screen
         name="CameraScreenStack"
-        options={{
-          drawerLabel: 'Camera',
-        }}
+        options={{ drawerLabel: 'Camera' }}
         component={createScreenStack('CameraScreen', CameraScreen, 'Camera')}
       />
-
-      {/* ✅ 커뮤니티 스크린 */}
       <Drawer.Screen
         name="CommunityScreenStack"
-        options={{
-          drawerLabel: 'Community',
-        }}
+        options={{ drawerLabel: 'Community' }}
         component={createScreenStack('CommunityScreen', CommunityScreen, 'Community')}
       />
-
-      {/* ✅ 수하물 정보 스크린 */}
       <Drawer.Screen
         name="InfoScreenStack"
-        options={{
-          drawerLabel: 'Info',
-        }}
+        options={{ drawerLabel: 'Info' }}
         component={createScreenStack('InfoScreen', InfoScreen, 'Info')}
       />
+      <Drawer.Screen
+        name="InfoScreen2Stack"
+        options={{ drawerLabel: 'Info 2' }}
+        component={createScreenStack('InfoScreen2', InfoScreen2, 'Info 2')}
+/>
+<Drawer.Screen
+        name="InfoScreen3Stack"
+        options={{ drawerLabel: 'Info 3' }}
+        component={createScreenStack('InfoScreen3', InfoScreen3, 'Info 3')}
+/>
+
     </Drawer.Navigator>
   );
 };

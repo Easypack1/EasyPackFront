@@ -67,12 +67,12 @@ const LoginScreen = ({ navigation }) => {
           console.log('사용자 정보:', jsonResponse);
 
         // ✅ 로그인 성공 후 userId 저장
-        await AsyncStorage.setItem('userId', jsonResponse.userId); // userId는 testuser1 같은 값
+        await AsyncStorage.setItem('userId', jsonResponse.user.userId); // userId는 testuser1 같은 값
 
         // ✅ 다음 화면으로 이동
         navigation.replace('DrawerNavigationRoutes', {
-         userData: jsonResponse,
-         travelDestination: jsonResponse.travelDestination,
+         userData:  jsonResponse.user,
+         travelDestination: jsonResponse.user.travelDestination,
         });
 
         } else {

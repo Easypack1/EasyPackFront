@@ -17,28 +17,44 @@ const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
 
 // ✅ Stack 생성 함수 (NavigationContainer 제거)
-const createScreenStack = (name, component, navigationTitle) => {
-  return ({ navigation, route }) => (
-    <Stack.Navigator>
-      <Stack.Screen
-        name={name}
-        component={component}
-        initialParams={route.params}
-        options={{
-          title: navigationTitle,
-          headerLeft: () => <BackBtn onPress={() => navigation.goBack()} />,
-          headerStyle: {
-            backgroundColor: '#307ecc',
-          },
-          headerTintColor: '#fff',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        }}
-      />
-    </Stack.Navigator>
-  );
+const createScreenStack = (name, Component, navigationTitle) => {
+  return ({ navigation, route }) => {
+    const params = route.params || {}; // 💡 route.params 안전하게 꺼냄
+
+    return (
+      <Stack.Navigator>
+        <Stack.Screen
+          name={name}
+          options={{
+            title: navigationTitle,
+            headerLeft: () => <BackBtn onPress={() => navigation.goBack()} />,
+            headerStyle: {
+              backgroundColor: '#307ecc',
+            },
+            headerTintColor: '#fff',
+            headerTitleStyle: {
+              fontWeight: 'bold',
+            },
+          }}
+        >
+          {props => (
+            <Component
+              {...props}
+              route={{
+                ...props.route,
+                params: {
+                  ...params,              // Drawer에서 전달된 initialParams
+                  ...props.route.params,  // 실제 props로 전달된 params
+                },
+              }}
+            />
+          )}
+        </Stack.Screen>
+      </Stack.Navigator>
+    );
+  };
 };
+
 
 
 

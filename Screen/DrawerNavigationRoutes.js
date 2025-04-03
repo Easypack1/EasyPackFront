@@ -79,6 +79,7 @@ const DrawerNavigatorRoutes = ({route}) => {
         name="SettingsScreenStack"
         options={{ drawerLabel: 'Settings' }}
         component={createScreenStack('SettingsScreen', SettingsScreen, 'Settings')}
+        initialParams={userParams} // 전체 파라미터 전달
       />
       <Drawer.Screen
         name="CameraScreenStack"

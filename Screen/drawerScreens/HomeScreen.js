@@ -17,24 +17,25 @@ const icons = {
 const HomeScreen = ({ route, navigation }) => {
   const {
     travelDestination,
-    userData = {}, // userData가 undefined일 경우를 대비해 기본값 설정
+    userData = {},  // userData가 undefined일 경우를 대비해 기본값 설정
+    token, 
   } = route.params || {};
   
   const {
-    id,
+    userId,
     password,
     nickname,
     airline,
-    userId,
   } = userData;
   
   useEffect(() => {
     console.log('🏡 받은 사용자 정보:', {
-      id,
+      userId,
       password,
       nickname,
       travelDestination,
       airline,
+      token,
     });
   }, []);
 
@@ -128,6 +129,7 @@ const HomeScreen = ({ route, navigation }) => {
     onPress={() =>
     navigation.navigate('SettingsScreenStack', {
       userData: userData, // ✅ 전달 추가
+      token: token, // ✅ 반드시 같이 넘기기
     })
   }
 >

@@ -15,7 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SettingsScreen = ({ route }) => {
   const [userInfo, setUserInfo] = useState({
-    id: '',
+    userId: '',
     password: '',
     nickname: '',
     country: '',
@@ -47,8 +47,8 @@ const SettingsScreen = ({ route }) => {
         }
 
         setUserInfo({
-          id: userData.userId || userData.id,
-          password: '',
+          userId: userData.userId || userData.id,
+          password: userData.password,
           nickname: userData.nickname,
           country: userData.travelDestination || userData.country,
           airline: userData.airline,
@@ -68,9 +68,14 @@ const SettingsScreen = ({ route }) => {
 
   const handleSave = async () => {
     try {
+      const token = await AsyncStorage.getItem('accessToken'); // 🔐 저장된 토큰 꺼냄
+      console.log('🛡️ 토큰 확인:', token);
       const response = await fetch('http://13.236.230.193:8082/api/user/update', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, // ✅ 헤더에 토큰 추가
+         },
         body: JSON.stringify({
           userId: userInfo.id,
           password: userInfo.password,
@@ -79,7 +84,9 @@ const SettingsScreen = ({ route }) => {
           airline: userInfo.airline,
         }),
       });
-
+      const responseText = await response.text();
+      console.log('📥 서버 응답:', response.status, responseText);
+  
       if (response.ok) {
         Alert.alert('저장 완료', '회원 정보가 저장되었습니다.');
       } else {

@@ -8,6 +8,8 @@ import CommunityScreen from './drawerScreens/CommunityScreen';
 import InfoScreen from './drawerScreens/InfoScreen';
 import InfoScreen2 from './drawerScreens/InfoScreen2';
 import InfoScreen3 from './drawerScreens/InfoScreen3';
+import WriteScreen from './drawerScreens/WriteScreen';
+import ReviewScreen from './drawerScreens/ReviewScreen';
 import CustomSidebarMenu from './Components/CustomSidebarMenu';
 import BackBtn from './Components/BackBtn';
 
@@ -103,7 +105,18 @@ const DrawerNavigatorRoutes = ({route}) => {
         options={{ drawerLabel: 'Info 3' }}
         component={createScreenStack('InfoScreen3', InfoScreen3, 'Info 3')}
       />
+      <Drawer.Screen
+        name="WriteScreen"
+        options={{ drawerLabel: 'Write' }}
+        component={createScreenStack('WriteScreen', WriteScreen, 'Write')}
+      />
+       <Drawer.Screen
+        name="ReviewScreen"
+        options={{ drawerLabel: 'Review' }}
+        component={createScreenStack('ReviewScreen', ReviewScreen, 'Review')}
+      />
     </Drawer.Navigator>
+    
   );
 };
 

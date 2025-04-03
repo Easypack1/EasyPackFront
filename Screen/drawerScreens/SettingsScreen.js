@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ScrollView } from 'react-native';
 import {
   View,
   Text,
@@ -12,7 +13,7 @@ import {
 import RNPickerSelect from 'react-native-picker-select';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const SettingsScreen = () => {
+const SettingsScreen = ({ route }) => {
   const [userInfo, setUserInfo] = useState({
     id: '',
     password: '',
@@ -21,33 +22,36 @@ const SettingsScreen = () => {
     airline: '',
   });
 
-  // ✅ 유저 정보 가져오기
+  // ✅ route.params에서 userData를 우선적으로 가져오기
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const storedUserData = await AsyncStorage.getItem('userData');
-        let parsedData = null;
+        let userData = route.params?.userData;
 
-        if (storedUserData) {
-          parsedData = JSON.parse(storedUserData);
-        } else {
-          const storedUserId = await AsyncStorage.getItem('userId');
-          if (!storedUserId) {
-            Alert.alert('오류', '로그인 정보를 찾을 수 없습니다.');
-            return;
+        if (!userData) {
+          // route.params에 없을 경우 AsyncStorage → API 호출
+          const storedUserData = await AsyncStorage.getItem('userData');
+          if (storedUserData) {
+            userData = JSON.parse(storedUserData);
+          } else {
+            const storedUserId = await AsyncStorage.getItem('userId');
+            if (!storedUserId) {
+              Alert.alert('오류', '로그인 정보를 찾을 수 없습니다.');
+              return;
+            }
+
+            const response = await fetch(`http://13.236.230.193:8082/api/user/${storedUserId}`);
+            const data = await response.json();
+            userData = data;
           }
-
-          const response = await fetch(`http://13.236.230.193:8082/api/user/${storedUserId}`);
-          const data = await response.json();
-          parsedData = data;
         }
 
         setUserInfo({
-          id: parsedData.userId,
-          password: parsedData.password,
-          nickname: parsedData.nickname,
-          country: parsedData.travelDestination,
-          airline: parsedData.airline,
+          id: userData.userId || userData.id,
+          password: '',
+          nickname: userData.nickname,
+          country: userData.travelDestination || userData.country,
+          airline: userData.airline,
         });
       } catch (error) {
         console.error('유저 정보 불러오기 실패:', error);
@@ -56,7 +60,7 @@ const SettingsScreen = () => {
     };
 
     fetchUserInfo();
-  }, []);
+  }, [route.params]);
 
   const handleChange = (key, value) => {
     setUserInfo(prev => ({ ...prev, [key]: value }));
@@ -66,9 +70,7 @@ const SettingsScreen = () => {
     try {
       const response = await fetch('http://13.236.230.193:8082/api/user/update', {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: userInfo.id,
           password: userInfo.password,
@@ -91,62 +93,72 @@ const SettingsScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>프로필</Text>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
 
-      <View style={styles.profileImageContainer}>
-        <Image source={require('../../Image/usericon.png')} style={styles.profileImage} />
-      </View>
+        <Text style={styles.header}>프로필</Text>
 
-      <View style={styles.readOnlyField}>
-        <Text style={styles.readOnlyLabel}>아이디</Text>
-        <Text style={styles.readOnlyText}>{userInfo.id}</Text>
-      </View>
+        <View style={styles.profileImageContainer}>
+          <Image source={require('../../Image/usericon.png')} style={styles.profileImage} />
+        </View>
 
-      <TextInput
-        style={styles.input}
-        value={userInfo.password}
-        onChangeText={(text) => handleChange('password', text)}
-        placeholder="비밀번호"
-        secureTextEntry
-      />
-      <TextInput
-        style={styles.input}
-        value={userInfo.nickname}
-        onChangeText={(text) => handleChange('nickname', text)}
-        placeholder="닉네임"
-      />
+        {/* 아이디 */}
+        <View style={styles.readOnlyField}>
+          <Text style={styles.label}>아이디</Text>
+          <Text style={styles.readOnlyText}>{userInfo.id}</Text>
+        </View>
 
-      <RNPickerSelect
-        onValueChange={(value) => handleChange('country', value)}
-        value={userInfo.country}
-        placeholder={{ label: '국가 선택', value: null }}
-        items={[
-          { label: '베트남', value: 'vietnam' },
-          { label: '미국', value: 'usa' },
-          { label: '일본', value: 'japan' },
-          { label: '태국', value: 'thailand' },
-          { label: '필리핀', value: 'philippines' },
-        ]}
-        style={pickerSelectStyles}
-      />
+        <Text style={styles.label}>비밀번호</Text>
+        <TextInput
+          style={styles.input}
+          value={userInfo.password}
+          onChangeText={(text) => handleChange('password', text)}
+          placeholder="비밀번호"
+          secureTextEntry
+        />
 
-      <RNPickerSelect
-        onValueChange={(value) => handleChange('airline', value)}
-        value={userInfo.airline}
-        placeholder={{ label: '핬공사 선택', value: null }}
-        items={[
-          { label: '대한핬공', value: '대한항공' },
-          { label: '아시아나핬공', value: '아시아나항공' },
-          { label: '제주핬공', value: '제주항공' },
-          { label: '티웨이핬공', value: '티웨이항공' },
-          { label: '진에어핬공', value: '진에어항공' },
-        ]}
-        style={pickerSelectStyles}
-      />
+        <Text style={styles.label}>닉네임</Text>
+        <TextInput
+          style={styles.input}
+          value={userInfo.nickname}
+          onChangeText={(text) => handleChange('nickname', text)}
+          placeholder="닉네임"
+        />
 
-      <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-        <Text style={styles.saveButtonText}>저장</Text>
-      </TouchableOpacity>
+        <Text style={styles.label}>여행 국가</Text>
+        <RNPickerSelect
+          onValueChange={(value) => handleChange('country', value)}
+          value={userInfo.country}
+          placeholder={{ label: '국가 선택', value: null }}
+          items={[
+            { label: '베트남', value: 'vietnam' },
+            { label: '미국', value: 'usa' },
+            { label: '일본', value: 'japan' },
+            { label: '태국', value: 'thailand' },
+            { label: '필리핀', value: 'philippines' },
+          ]}
+          style={pickerSelectStyles}
+        />
+
+        <Text style={styles.label}>항공사</Text>
+        <RNPickerSelect
+          onValueChange={(value) => handleChange('airline', value)}
+          value={userInfo.airline}
+          placeholder={{ label: '항공사 선택', value: null }}
+          items={[
+            { label: '대한항공', value: '대한항공' },
+            { label: '아시아나항공', value: '아시아나항공' },
+            { label: '제주항공', value: '제주항공' },
+            { label: '티웨이항공', value: '티웨이항공' },
+            { label: '진에어항공', value: '진에어항공' },
+          ]}
+          style={pickerSelectStyles}
+        />
+
+        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+          <Text style={styles.saveButtonText}>수정</Text>
+        </TouchableOpacity>
+
+      </ScrollView>
     </SafeAreaView>
   );
 };

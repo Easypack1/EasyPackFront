@@ -22,14 +22,12 @@ const SettingsScreen = ({ route }) => {
     airline: '',
   });
 
-  // ✅ route.params에서 userData를 우선적으로 가져오기
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
         let userData = route.params?.userData;
 
         if (!userData) {
-          // route.params에 없을 경우 AsyncStorage → API 호출
           const storedUserData = await AsyncStorage.getItem('userData');
           if (storedUserData) {
             userData = JSON.parse(storedUserData);
@@ -68,25 +66,26 @@ const SettingsScreen = ({ route }) => {
 
   const handleSave = async () => {
     try {
-      const token = await AsyncStorage.getItem('accessToken'); // 🔐 저장된 토큰 꺼냄
+      const token = await AsyncStorage.getItem('accessToken');
       console.log('🛡️ 토큰 확인:', token);
       const response = await fetch('http://13.236.230.193:8082/api/user/update', {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`, // ✅ 헤더에 토큰 추가
-         },
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify({
-          userId: userInfo.id,
+          userId: userInfo.userId,
           password: userInfo.password,
           nickname: userInfo.nickname,
           travelDestination: userInfo.country,
           airline: userInfo.airline,
         }),
       });
+
       const responseText = await response.text();
       console.log('📥 서버 응답:', response.status, responseText);
-  
+
       if (response.ok) {
         Alert.alert('저장 완료', '회원 정보가 저장되었습니다.');
       } else {
@@ -101,106 +100,96 @@ const SettingsScreen = ({ route }) => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-
         <Text style={styles.header}>프로필</Text>
 
         <View style={styles.profileImageContainer}>
           <Image source={require('../../Image/usericon.png')} style={styles.profileImage} />
         </View>
 
-        {/* 아이디 */}
-        <View style={styles.readOnlyField}>
+        <View style={styles.inputBox}>
           <Text style={styles.label}>아이디</Text>
-          <Text style={styles.readOnlyText}>{userInfo.id}</Text>
+          <Text style={styles.readOnlyText}>{userInfo.userId}</Text>
         </View>
 
-        <Text style={styles.label}>비밀번호</Text>
-        <TextInput
-          style={styles.input}
-          value={userInfo.password}
-          onChangeText={(text) => handleChange('password', text)}
-          placeholder="비밀번호"
-          secureTextEntry
-        />
+        <View style={styles.inputBox}>
+          <Text style={styles.label}>비밀번호</Text>
+          <TextInput
+            style={styles.input}
+            value={userInfo.password}
+            onChangeText={(text) => handleChange('password', text)}
+            placeholder="비밀번호"
+            secureTextEntry
+          />
+        </View>
 
-        <Text style={styles.label}>닉네임</Text>
-        <TextInput
-          style={styles.input}
-          value={userInfo.nickname}
-          onChangeText={(text) => handleChange('nickname', text)}
-          placeholder="닉네임"
-        />
+        <View style={styles.inputBox}>
+          <Text style={styles.label}>닉네임</Text>
+          <TextInput
+            style={styles.input}
+            value={userInfo.nickname}
+            onChangeText={(text) => handleChange('nickname', text)}
+            placeholder="닉네임"
+          />
+        </View>
 
-        <Text style={styles.label}>여행 국가</Text>
-        <RNPickerSelect
-          onValueChange={(value) => handleChange('country', value)}
-          value={userInfo.country}
-          placeholder={{ label: '국가 선택', value: null }}
-          items={[
-            { label: '베트남', value: 'vietnam' },
-            { label: '미국', value: 'usa' },
-            { label: '일본', value: 'japan' },
-            { label: '태국', value: 'thailand' },
-            { label: '필리핀', value: 'philippines' },
-          ]}
-          style={pickerSelectStyles}
-        />
+        <View style={styles.inputBox}>
+          <Text style={styles.label}>여행 국가</Text>
+          <RNPickerSelect
+            onValueChange={(value) => handleChange('country', value)}
+            value={userInfo.country}
+            placeholder={{ label: '국가 선택', value: null }}
+            items={[
+              { label: '베트남', value: 'vietnam' },
+              { label: '미국', value: 'usa' },
+              { label: '일본', value: 'japan' },
+              { label: '태국', value: 'thailand' },
+              { label: '필리핀', value: 'philippines' },
+            ]}
+            style={pickerSelectStyles}
+          />
+        </View>
 
-        <Text style={styles.label}>항공사</Text>
-        <RNPickerSelect
-          onValueChange={(value) => handleChange('airline', value)}
-          value={userInfo.airline}
-          placeholder={{ label: '항공사 선택', value: null }}
-          items={[
-            { label: '대한항공', value: '대한항공' },
-            { label: '아시아나항공', value: '아시아나항공' },
-            { label: '제주항공', value: '제주항공' },
-            { label: '티웨이항공', value: '티웨이항공' },
-            { label: '진에어항공', value: '진에어항공' },
-          ]}
-          style={pickerSelectStyles}
-        />
+        <View style={styles.inputBox}>
+          <Text style={styles.label}>항공사</Text>
+          <RNPickerSelect
+            onValueChange={(value) => handleChange('airline', value)}
+            value={userInfo.airline}
+            placeholder={{ label: '항공사 선택', value: null }}
+            items={[
+              { label: '대한항공', value: '대한항공' },
+              { label: '아시아나항공', value: '아시아나항공' },
+              { label: '제주항공', value: '제주항공' },
+              { label: '티웨이항공', value: '티웨이항공' },
+              { label: '진에어항공', value: '진에어항공' },
+            ]}
+            style={pickerSelectStyles}
+          />
+        </View>
 
         <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
           <Text style={styles.saveButtonText}>수정</Text>
         </TouchableOpacity>
-
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, backgroundColor: '#fff' },
-  header: { fontSize: 28, fontWeight: 'bold', marginBottom: 20 },
+  container: { flex: 1, backgroundColor: '#fff' },
+  scrollContainer: { alignItems: 'center', paddingBottom: 24 },
+  header: { fontSize: 28, fontWeight: 'bold', marginTop: 24, marginBottom: 20 },
   profileImageContainer: { alignItems: 'center', marginBottom: 20 },
   profileImage: { width: 80, height: 80, borderRadius: 40 },
+  inputBox: {
+    width: '90%',
+    marginBottom: 15,
+  },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 12,
     borderRadius: 8,
-    marginBottom: 15,
-  },
-  saveButton: {
-    backgroundColor: '#4a90e2',
-    padding: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  saveButtonText: {
-    color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
-  },
-  readOnlyField: {
-    marginBottom: 15,
-  },
-  readOnlyLabel: {
-    color: '#777',
-    fontSize: 14,
-    marginBottom: 4,
   },
   readOnlyText: {
     borderWidth: 1,
@@ -211,10 +200,30 @@ const styles = StyleSheet.create({
     color: '#333',
     backgroundColor: '#f5f5f5',
   },
+  label: {
+    marginBottom: 6,
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  saveButton: {
+    width: '90%',
+    backgroundColor: '#4a90e2',
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 30,
+  },
+  saveButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });
 
 const pickerSelectStyles = {
   inputIOS: {
+    width: '100%',
     fontSize: 16,
     paddingVertical: 12,
     paddingHorizontal: 12,
@@ -223,9 +232,9 @@ const pickerSelectStyles = {
     borderRadius: 8,
     color: 'black',
     paddingRight: 30,
-    marginBottom: 15,
   },
   inputAndroid: {
+    width: '100%',
     fontSize: 16,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -234,7 +243,6 @@ const pickerSelectStyles = {
     borderRadius: 8,
     color: 'black',
     paddingRight: 30,
-    marginBottom: 15,
   },
 };
 

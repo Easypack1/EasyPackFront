@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -30,15 +30,10 @@ const ReviewScreen = () => {
     };
 
     try {
-      // 기존 리뷰 데이터 가져오기
       const storedReviews = await AsyncStorage.getItem('reviews');
       const parsedReviews = storedReviews ? JSON.parse(storedReviews) : [];
-
-      // 새로운 리뷰 추가 후 저장
       const updatedReviews = [...parsedReviews, newReview];
       await AsyncStorage.setItem('reviews', JSON.stringify(updatedReviews));
-
-      // 🚀 CommunityScreenStack 안에 있는 CommunityScreen으로 이동
       navigation.navigate('CommunityScreenStack', { screen: 'CommunityScreen' });
     } catch (error) {
       console.error('리뷰 저장 중 오류 발생:', error);
@@ -56,20 +51,27 @@ const ReviewScreen = () => {
       </View>
 
       {/* 나라 선택 */}
-      <FlatList
-        horizontal
-        data={countryList}
-        keyExtractor={(item) => item}
-        renderItem={({ item }) => (
+      <View style={styles.countryListContainer}>
+        {countryList.map((item) => (
           <TouchableOpacity
-            style={[styles.countryButton, selectedCountry === item && styles.activeCountry]}
+            key={item}
+            style={[
+              styles.countryButton,
+              selectedCountry === item && styles.activeCountry,
+            ]}
             onPress={() => setSelectedCountry(item)}
           >
-            <Text style={styles.countryText}>{item}</Text>
+            <Text
+              style={[
+                styles.countryText,
+                selectedCountry === item && styles.activeCountryText,
+              ]}
+            >
+              {item}
+            </Text>
           </TouchableOpacity>
-        )}
-      />
-
+        ))}
+      </View>
 
       {/* 별점 선택 */}
       <View style={styles.starContainer}>
@@ -103,29 +105,36 @@ const ReviewScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex :1,
+  container: {
+    flex: 1,
     padding: 20,
-    backgroundColor: '#fff' },
-
-  header: { flexDirection: 'row', 
-    alignItems: 'center', 
-    marginBottom: 10 },
-
-  headerText: { fontSize: 20, 
-    fontWeight: 'bold', 
-    marginLeft: 10 },
-
+    backgroundColor: '#fff',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  headerText: {
+    marginTop: 10,
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginLeft: 10,
+  },
+  countryListContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+    marginBottom: 10,
+  },
   countryButton: {
-    paddingVertical: 4,  
-    paddingHorizontal: 10, 
+    paddingVertical: 9,
+    paddingHorizontal: 12,
     borderRadius: 15,
     backgroundColor: '#eee',
-    marginHorizontal: 5,
-    height: 30,  // 🔹 버튼 높이 설정
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 15,
-    marginTop: 15,
+    marginHorizontal: 4,
+    marginVertical: 4,
+    marginTop: 20,
   },
   activeCountry: {
     backgroundColor: '#007AFF',
@@ -135,21 +144,26 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
-  starContainer:{
+  activeCountryText: {
+    color: '#fff',
+  },
+  starContainer: {
+    
     flexDirection: 'row',
     justifyContent: 'center',
-    marginBottom: 15,
-
- },
-
+    marginBottom: 10,
+    marginTop: 20,
+    
+  },
   inputBox: {
-    height: 250,
+    height: 300,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 10,
     padding: 15,
     fontSize: 15,
     textAlignVertical: 'top',
+    marginTop: 20,
   },
   submitButton: {
     backgroundColor: '#007AFF',
@@ -159,10 +173,11 @@ const styles = StyleSheet.create({
     marginTop: 15,
     width: '100%',
   },
-  submitButtonText: { color: '#fff', 
-    fontSize: 16, 
-    fontWeight: 'bold' },
-
+  submitButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });
 
 export default ReviewScreen;

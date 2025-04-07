@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
   // 🔹 여행지 사진 박스 스타일
   imageBox: {
     width: '85%',  // 박스 너비
-    height: 270,  // 박스 높이를 설정 (원하는 크기로 조정 가능)
+    height: 280,  // 박스 높이를 설정 (원하는 크기로 조정 가능)
     borderRadius: 12,  // 모서리 둥글게
     marginBottom: 20,  // 하단 여백
     overflow: 'hidden',  // 이미지가 박스를 벗어나지 않도록

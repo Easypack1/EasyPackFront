@@ -1,19 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView } from 'react-native';
 import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  SafeAreaView,
-  Alert,
+  ScrollView, View, Text, TextInput, StyleSheet,
+  TouchableOpacity, Image, SafeAreaView, Alert, ActivityIndicator
 } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const SettingsScreen = ({ route }) => {
+const SettingsScreen = ({ navigation }) => {
   const [userInfo, setUserInfo] = useState({
     userId: '',
     password: '',
@@ -22,43 +15,60 @@ const SettingsScreen = ({ route }) => {
     airline: '',
   });
 
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        let userData = route.params?.userData;
-
-        if (!userData) {
-          const storedUserData = await AsyncStorage.getItem('userData');
-          if (storedUserData) {
-            userData = JSON.parse(storedUserData);
-          } else {
-            const storedUserId = await AsyncStorage.getItem('userId');
-            if (!storedUserId) {
-              Alert.alert('오류', '로그인 정보를 찾을 수 없습니다.');
-              return;
-            }
-
-            const response = await fetch(`http://13.236.230.193:8082/api/user/${storedUserId}`);
-            const data = await response.json();
-            userData = data;
-          }
+        const token = await AsyncStorage.getItem('accessToken');
+        console.log('🔐 accessToken:', token);
+  
+        const response = await fetch('http://13.236.230.193:8082/api/auth/user/me', {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+  
+        const contentType = response.headers.get('content-type');
+        console.log('📦 응답 Content-Type:', contentType);
+  
+        let data;
+  
+        if (contentType && contentType.includes('application/json')) {
+          data = await response.json();
+        } else {
+          const text = await response.text();
+          console.error('❌ JSON이 아닌 응답:', text);
+          throw new Error('서버에서 JSON이 아닌 응답을 반환함');
         }
-
+  
+        console.log('📥 받은 유저 정보:', data);
+  
+        if (!data || !data.userId) {
+          throw new Error('응답에 유저 정보가 포함되어 있지 않습니다.');
+        }
+  
         setUserInfo({
-          userId: userData.userId || userData.id,
-          password: userData.password,
-          nickname: userData.nickname,
-          country: userData.travelDestination || userData.country,
-          airline: userData.airline,
+          userId: data.userId,
+          password: '',
+          nickname: data.nickname || '',
+          country: data.travelDestination || '',
+          airline: data.airline || '',
         });
       } catch (error) {
-        console.error('유저 정보 불러오기 실패:', error);
-        Alert.alert('오류', '유저 정보를 불러오는 중 문제가 발생했습니다.');
+        console.error('❌ 유저 정보 로딩 실패:', error);
+        Alert.alert('오류', '회원 정보를 불러오는 중 문제가 발생했습니다.');
+      } finally {
+        console.log('🔚 로딩 종료');
+        setLoading(false);
       }
     };
-
+  
     fetchUserInfo();
-  }, [route.params]);
+  }, []);
+  
 
   const handleChange = (key, value) => {
     setUserInfo(prev => ({ ...prev, [key]: value }));
@@ -66,36 +76,58 @@ const SettingsScreen = ({ route }) => {
 
   const handleSave = async () => {
     try {
+      setSaving(true);
       const token = await AsyncStorage.getItem('accessToken');
-      console.log('🛡️ 토큰 확인:', token);
-      const response = await fetch('http://13.236.230.193:8082/api/user/update', {
+
+      const bodyData = {
+        userId: userInfo.userId,
+        nickname: userInfo.nickname,
+        travelDestination: userInfo.country,
+        airline: userInfo.airline,
+      };
+
+      if (userInfo.password.trim() !== '') {
+        bodyData.password = userInfo.password;
+      }
+
+      const response = await fetch('http://13.236.230.193:8082/api/auth/user/update', {
         method: 'PUT',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          userId: userInfo.userId,
-          password: userInfo.password,
-          nickname: userInfo.nickname,
-          travelDestination: userInfo.country,
-          airline: userInfo.airline,
-        }),
+        body: JSON.stringify(bodyData),
       });
 
-      const responseText = await response.text();
-      console.log('📥 서버 응답:', response.status, responseText);
+      const resText = await response.text();
+      console.log('📤 저장 응답:', response.status, resText);
 
-      if (response.ok) {
-        Alert.alert('저장 완료', '회원 정보가 저장되었습니다.');
+      if (response.ok && resText.toLowerCase().includes('성공')) {
+        Alert.alert('저장 완료', '회원 정보가 저장되었습니다.', [
+          {
+            text: '확인',
+            onPress: () => navigation.navigate('Home', { refresh: true }),
+          },
+        ]);
       } else {
-        Alert.alert('오류', '저장에 실패했습니다.');
+        Alert.alert('오류', resText || '회원 정보 저장에 실패했습니다.');
       }
     } catch (error) {
-      console.error('저장 오류:', error);
-      Alert.alert('오류', '서버와 통신 중 문제가 발생했습니다.');
+      console.error('❌ 저장 오류:', error);
+      Alert.alert('오류', '회원 정보를 저장하는 중 오류가 발생했습니다.');
+    } finally {
+      setSaving(false);
     }
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#4a90e2" />
+        <Text>회원 정보를 불러오는 중입니다...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -112,7 +144,7 @@ const SettingsScreen = ({ route }) => {
         </View>
 
         <View style={styles.inputBox}>
-          <Text style={styles.label}>비밀번호</Text>
+          <Text style={styles.label}>비밀번호 (입력 시에만 변경됩니다)</Text>
           <TextInput
             style={styles.input}
             value={userInfo.password}
@@ -144,6 +176,7 @@ const SettingsScreen = ({ route }) => {
               { label: '일본', value: 'japan' },
               { label: '태국', value: 'thailand' },
               { label: '필리핀', value: 'philippines' },
+              { label: '오사카', value: '오사카' },
             ]}
             style={pickerSelectStyles}
           />
@@ -166,8 +199,8 @@ const SettingsScreen = ({ route }) => {
           />
         </View>
 
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>수정</Text>
+        <TouchableOpacity style={styles.saveButton} onPress={handleSave} disabled={saving}>
+          <Text style={styles.saveButtonText}>{saving ? '저장 중...' : '수정'}</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -177,13 +210,11 @@ const SettingsScreen = ({ route }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   scrollContainer: { alignItems: 'center', paddingBottom: 24 },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: { fontSize: 28, fontWeight: 'bold', marginTop: 24, marginBottom: 20 },
   profileImageContainer: { alignItems: 'center', marginBottom: 20 },
   profileImage: { width: 80, height: 80, borderRadius: 40 },
-  inputBox: {
-    width: '90%',
-    marginBottom: 15,
-  },
+  inputBox: { width: '90%', marginBottom: 15 },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',

@@ -22,34 +22,16 @@ const SettingsScreen = ({ navigation }) => {
     const fetchUserInfo = async () => {
       try {
         const token = await AsyncStorage.getItem('accessToken');
-        console.log('🔐 accessToken:', token);
-  
         const response = await fetch('http://13.236.230.193:8082/api/auth/user/me', {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-  
-        const contentType = response.headers.get('content-type');
-        console.log('📦 응답 Content-Type:', contentType);
-  
-        let data;
-  
-        if (contentType && contentType.includes('application/json')) {
-          data = await response.json();
-        } else {
-          const text = await response.text();
-          console.error('❌ JSON이 아닌 응답:', text);
-          throw new Error('서버에서 JSON이 아닌 응답을 반환함');
-        }
-  
+
+        const data = await response.json();
         console.log('📥 받은 유저 정보:', data);
-  
-        if (!data || !data.userId) {
-          throw new Error('응답에 유저 정보가 포함되어 있지 않습니다.');
-        }
-  
+
         setUserInfo({
           userId: data.userId,
           password: '',
@@ -61,14 +43,12 @@ const SettingsScreen = ({ navigation }) => {
         console.error('❌ 유저 정보 로딩 실패:', error);
         Alert.alert('오류', '회원 정보를 불러오는 중 문제가 발생했습니다.');
       } finally {
-        console.log('🔚 로딩 종료');
         setLoading(false);
       }
     };
-  
+
     fetchUserInfo();
   }, []);
-  
 
   const handleChange = (key, value) => {
     setUserInfo(prev => ({ ...prev, [key]: value }));
@@ -90,6 +70,8 @@ const SettingsScreen = ({ navigation }) => {
         bodyData.password = userInfo.password;
       }
 
+      console.log('📤 저장 요청 바디:', bodyData);
+
       const response = await fetch('http://13.236.230.193:8082/api/auth/user/update', {
         method: 'PUT',
         headers: {
@@ -102,11 +84,11 @@ const SettingsScreen = ({ navigation }) => {
       const resText = await response.text();
       console.log('📤 저장 응답:', response.status, resText);
 
-      if (response.ok && resText.toLowerCase().includes('성공')) {
+      if (response.ok && resText.toLowerCase().includes('success')) {
         Alert.alert('저장 완료', '회원 정보가 저장되었습니다.', [
           {
             text: '확인',
-            onPress: () => navigation.navigate('Home', { refresh: true }),
+            onPress: () => navigation.navigate('HomeScreenStack'), // ✅ params 없이 navigate
           },
         ]);
       } else {
@@ -144,12 +126,12 @@ const SettingsScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.inputBox}>
-          <Text style={styles.label}>비밀번호 (입력 시에만 변경됩니다)</Text>
+          <Text style={styles.label}>비밀번호</Text>
           <TextInput
             style={styles.input}
             value={userInfo.password}
             onChangeText={(text) => handleChange('password', text)}
-            placeholder="비밀번호"
+            placeholder="비밀번호 (수정 시 입력)"
             secureTextEntry
           />
         </View>
@@ -176,7 +158,6 @@ const SettingsScreen = ({ navigation }) => {
               { label: '일본', value: 'japan' },
               { label: '태국', value: 'thailand' },
               { label: '필리핀', value: 'philippines' },
-              { label: '오사카', value: '오사카' },
             ]}
             style={pickerSelectStyles}
           />

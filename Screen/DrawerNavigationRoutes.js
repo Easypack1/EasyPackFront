@@ -1,6 +1,7 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
+
 import HomeScreen from './drawerScreens/HomeScreen';
 import SettingsScreen from './drawerScreens/SettingsScreen';
 import CameraScreen from './drawerScreens/CameraScreen';
@@ -9,55 +10,40 @@ import InfoScreen from './drawerScreens/InfoScreen';
 import InfoScreen2 from './drawerScreens/InfoScreen2';
 import InfoScreen3 from './drawerScreens/InfoScreen3';
 import ReviewScreen from './drawerScreens/ReviewScreen';
+
 import CustomSidebarMenu from './Components/CustomSidebarMenu';
 import BackBtn from './Components/BackBtn';
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
 
-// ✅ Stack 생성 함수 (NavigationContainer 제거)
+// ✅ Stack 생성 함수 (params 제거)
 const createScreenStack = (name, Component, navigationTitle) => {
-  return ({ navigation, route }) => {
-    const params = route.params || {}; // 💡 route.params 안전하게 꺼냄
-
-    return (
-      <Stack.Navigator>
-        <Stack.Screen
-          name={name}
-          options={{
-            title: navigationTitle,
-            headerLeft: name === 'HomeScreen' ? undefined : () => <BackBtn onPress={() => navigation.goBack()} />, // HomeScreen만 백버튼 제거
-            headerStyle: {
-              backgroundColor: '#307ecc',
-            },
-            headerTintColor: '#fff',
-            headerTitleStyle: {
-              fontWeight: 'bold',
-            },
-          }}
-        >
-          {props => (
-            <Component
-              {...props}
-              route={{
-                ...props.route,
-                params: {
-                  ...params,              // Drawer에서 전달된 initialParams
-                  ...props.route.params,  // 실제 props로 전달된 params
-                },
-              }}
-            />
-          )}
-        </Stack.Screen>
-      </Stack.Navigator>
-    );
-  };
+  return ({ navigation }) => (
+    <Stack.Navigator>
+      <Stack.Screen
+        name={name}
+        options={{
+          title: navigationTitle,
+          headerLeft: name === 'HomeScreen'
+            ? undefined
+            : () => <BackBtn onPress={() => navigation.goBack()} />,
+          headerStyle: {
+            backgroundColor: '#307ecc',
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+        component={Component}
+      />
+    </Stack.Navigator>
+  );
 };
 
-const DrawerNavigatorRoutes = ({route}) => {
-  const userParams = route?.params || {};
-  console.log('🚪 Drawer로 넘어온 params:', userParams);
-
+// ✅ DrawerNavigator에서 params 제거
+const DrawerNavigatorRoutes = () => {
   return (
     <Drawer.Navigator
       screenOptions={{
@@ -72,13 +58,11 @@ const DrawerNavigatorRoutes = ({route}) => {
         name="HomeScreenStack"
         options={{ drawerLabel: 'Home' }}
         component={createScreenStack('HomeScreen', HomeScreen, 'Home')}
-        initialParams={userParams} // 전체 파라미터 전달
       />
       <Drawer.Screen
         name="SettingsScreenStack"
         options={{ drawerLabel: 'Settings' }}
         component={createScreenStack('SettingsScreen', SettingsScreen, 'Settings')}
-        initialParams={userParams} // 전체 파라미터 전달
       />
       <Drawer.Screen
         name="CameraScreenStack"
@@ -105,13 +89,12 @@ const DrawerNavigatorRoutes = ({route}) => {
         options={{ drawerLabel: 'Info 3' }}
         component={createScreenStack('InfoScreen3', InfoScreen3, 'Info 3')}
       />
-       <Drawer.Screen
+      <Drawer.Screen
         name="ReviewScreenStack"
         options={{ drawerLabel: 'Review' }}
         component={createScreenStack('ReviewScreen', ReviewScreen, 'Review')}
       />
     </Drawer.Navigator>
-    
   );
 };
 

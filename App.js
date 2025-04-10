@@ -10,8 +10,7 @@ import RegisterScreen from './Screen/RegisterScreen';
 import DrawerNavigationRoutes from './Screen/DrawerNavigationRoutes';
 import BackBtn from './Screen/Components/BackBtn';
 
-// Import Weather Component
-import Weather from './Screen/Components/Weather';  // ✅ Weather.js 추가
+
 
 const Stack = createStackNavigator();
 
@@ -72,12 +71,7 @@ const App = () => {
           options={{ headerShown: false }}
         />
 
-        {/* ✅ 추가된 Weather 스크린 */}
-        <Stack.Screen
-          name="Weather"
-          component={Weather}
-          options={{ title: '날씨 정보' }}  // 📌 "날씨 정보"라는 제목 표시
-        />
+
       </Stack.Navigator>
     </NavigationContainer>
   );

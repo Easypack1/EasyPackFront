@@ -5,6 +5,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import HomeScreen from './drawerScreens/HomeScreen';
 import SettingsScreen from './drawerScreens/SettingsScreen';
 import CameraScreen from './drawerScreens/CameraScreen';
+import DetectedInfoScreen from './drawerScreens/DetectedInfoScreen';
 import CommunityScreen from './drawerScreens/CommunityScreen';
 import InfoScreen from './drawerScreens/InfoScreen';
 import InfoScreen2 from './drawerScreens/InfoScreen2';
@@ -16,13 +17,15 @@ import BackBtn from './Components/BackBtn';
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
+console.log('📸 CameraScreen is:', typeof CameraScreen, CameraScreen);
 
-// ✅ Stack 생성 함수 (params 제거)
+// ✅ 공통 Stack 생성 함수 (단순한 페이지용)
 const createScreenStack = (name, Component, navigationTitle) => {
   return ({ navigation }) => (
     <Stack.Navigator>
       <Stack.Screen
         name={name}
+        component={Component}
         options={{
           title: navigationTitle,
           headerLeft: name === 'HomeScreen'
@@ -36,13 +39,47 @@ const createScreenStack = (name, Component, navigationTitle) => {
             fontWeight: 'bold',
           },
         }}
-        component={Component}
       />
     </Stack.Navigator>
   );
 };
 
-// ✅ DrawerNavigator에서 params 제거
+// ✅ Camera Stack → DetectedInfoScreen 포함
+const CameraStack = () => (
+  <Stack.Navigator>
+    <Stack.Screen
+      name="CameraScreen"
+      component={CameraScreen}
+      options={{
+        title: 'Camera',
+        headerStyle: {
+          backgroundColor: '#307ecc',
+        },
+        headerTintColor: '#fff',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+      }}
+    />
+    <Stack.Screen
+      name="DetectedInfoScreen"
+      component={DetectedInfoScreen}
+      options={{
+        title: 'Detected Info',
+        headerBackTitleVisible: false,
+        headerStyle: {
+          backgroundColor: '#307ecc',
+        },
+        headerTintColor: '#fff',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+      }}
+    />
+  </Stack.Navigator>
+);
+
+// ✅ Drawer 구조
 const DrawerNavigatorRoutes = () => {
   return (
     <Drawer.Navigator
@@ -67,7 +104,7 @@ const DrawerNavigatorRoutes = () => {
       <Drawer.Screen
         name="CameraScreenStack"
         options={{ drawerLabel: 'Camera' }}
-        component={createScreenStack('CameraScreen', CameraScreen, 'Camera')}
+        component={CameraStack} // ✅ DetectedInfo 포함된 Stack 사용
       />
       <Drawer.Screen
         name="CommunityScreenStack"

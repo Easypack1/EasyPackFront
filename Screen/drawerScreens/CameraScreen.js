@@ -1,10 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import { Camera, CameraView } from 'expo-camera';
-import * as FileSystem from 'expo-file-system';
 
 export default function CameraScreen({ navigation }) {
   const [hasPermission, setHasPermission] = useState(null);
+  const [cameraType, setCameraType] = useState(null);
   const [isDetecting, setIsDetecting] = useState(false);
   const [detectedObjects, setDetectedObjects] = useState([]);
   const cameraRef = useRef(null);
@@ -12,7 +19,12 @@ export default function CameraScreen({ navigation }) {
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
-      setHasPermission(status === 'granted');
+      if (status === 'granted') {
+        setHasPermission(true);
+        setCameraType(Camera?.Constants?.Type?.back ?? 0);
+      } else {
+        setHasPermission(false);
+      }
     })();
   }, []);
 
@@ -37,15 +49,21 @@ export default function CameraScreen({ navigation }) {
       const result = await response.json();
       console.log('🧠 YOLO 감지 결과:', result);
 
-      if (result.objects?.length > 0) {
-        setDetectedObjects(result.objects); // 🔴 bounding box 저장
-        const objectNames = result.objects.map(obj => obj.label).join(', ');
-        Alert.alert('감지된 물체', objectNames);
+      // ✅ 변경된 키: result.detections
+      if (result.detections?.length > 0) {
+        setDetectedObjects(result.detections);
+
+        const firstObject = result.detections[0];
+        const label = firstObject.label;
+
+        navigation.navigate('DetectedInfoScreen', {
+          label,
+          imageUri: photoUri,
+        });
       } else {
-        setDetectedObjects([]); // 감지된 것 없으면 박스 제거
+        setDetectedObjects([]);
         Alert.alert('감지된 물체 없음', '아무것도 감지되지 않았어요.');
       }
-
     } catch (err) {
       console.error('❌ 서버 요청 오류:', err);
       Alert.alert('에러', '서버 요청 중 문제가 발생했습니다.');
@@ -56,13 +74,32 @@ export default function CameraScreen({ navigation }) {
 
   const handleCapture = async () => {
     if (cameraRef.current) {
-      const photo = await cameraRef.current.takePictureAsync();
-      await sendToServer(photo.uri);
+      try {
+        const photo = await cameraRef.current.takePictureAsync();
+        if (photo?.uri) {
+          await sendToServer(photo.uri);
+        } else {
+          Alert.alert('오류', '사진 촬영에 실패했습니다.');
+        }
+      } catch (error) {
+        console.error('📸 촬영 오류:', error);
+        Alert.alert('에러', '촬영 도중 오류가 발생했습니다.');
+      }
+    } else {
+      Alert.alert('오류', '카메라가 준비되지 않았습니다.');
     }
   };
 
-  if (hasPermission === null) return <View />;
-  if (hasPermission === false) {
+  if (hasPermission === null || cameraType === null) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#fff" />
+        <Text style={{ color: '#fff', marginTop: 10 }}>카메라 초기화 중...</Text>
+      </View>
+    );
+  }
+
+  if (!hasPermission) {
     return (
       <View style={styles.centered}>
         <Text>카메라 접근 권한이 필요합니다.</Text>
@@ -72,17 +109,17 @@ export default function CameraScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* 📷 카메라 */}
       <CameraView
         ref={cameraRef}
         style={styles.camera}
         facing="back"
+        ratio="16:9"
       />
 
       {/* 🔲 감지된 박스 오버레이 */}
       <View style={styles.overlay}>
         {detectedObjects.map((obj, idx) => {
-          const [x, y, w, h] = obj.bbox; // 상대 좌표 (0~1)
+          const [x, y, w, h] = obj.bbox;
           return (
             <View
               key={idx}
@@ -155,6 +192,7 @@ const styles = StyleSheet.create({
     bottom: 30,
     width: '100%',
     alignItems: 'center',
+    zIndex: 50,
   },
   captureButton: {
     backgroundColor: '#3886a8',
@@ -171,5 +209,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'black',
   },
 });

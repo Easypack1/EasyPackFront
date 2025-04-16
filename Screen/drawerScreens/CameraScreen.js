@@ -13,7 +13,6 @@ export default function CameraScreen({ navigation }) {
   const [hasPermission, setHasPermission] = useState(null);
   const [cameraType, setCameraType] = useState(null);
   const [isDetecting, setIsDetecting] = useState(false);
-  const [detectedObjects, setDetectedObjects] = useState([]);
   const cameraRef = useRef(null);
 
   useEffect(() => {
@@ -49,10 +48,7 @@ export default function CameraScreen({ navigation }) {
       const result = await response.json();
       console.log('🧠 YOLO 감지 결과:', result);
 
-      // ✅ 변경된 키: result.detections
       if (result.detections?.length > 0) {
-        setDetectedObjects(result.detections);
-
         const firstObject = result.detections[0];
         const label = firstObject.label;
 
@@ -61,7 +57,6 @@ export default function CameraScreen({ navigation }) {
           imageUri: photoUri,
         });
       } else {
-        setDetectedObjects([]);
         Alert.alert('감지된 물체 없음', '아무것도 감지되지 않았어요.');
       }
     } catch (err) {
@@ -116,29 +111,6 @@ export default function CameraScreen({ navigation }) {
         ratio="16:9"
       />
 
-      {/* 🔲 감지된 박스 오버레이 */}
-      <View style={styles.overlay}>
-        {detectedObjects.map((obj, idx) => {
-          const [x, y, w, h] = obj.bbox;
-          return (
-            <View
-              key={idx}
-              style={[
-                styles.bbox,
-                {
-                  left: `${x * 100}%`,
-                  top: `${y * 100}%`,
-                  width: `${w * 100}%`,
-                  height: `${h * 100}%`,
-                },
-              ]}
-            >
-              <Text style={styles.bboxLabel}>{obj.label.toUpperCase()}</Text>
-            </View>
-          );
-        })}
-      </View>
-
       {/* 🎯 촬영 버튼 */}
       <View style={styles.controls}>
         <TouchableOpacity
@@ -162,30 +134,6 @@ const styles = StyleSheet.create({
   },
   camera: {
     flex: 1,
-  },
-  overlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 10,
-  },
-  bbox: {
-    position: 'absolute',
-    borderWidth: 2,
-    borderColor: 'red',
-    zIndex: 20,
-  },
-  bboxLabel: {
-    color: 'red',
-    fontSize: 12,
-    fontWeight: 'bold',
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
-    paddingHorizontal: 4,
-    position: 'absolute',
-    top: -18,
-    left: 0,
   },
   controls: {
     position: 'absolute',

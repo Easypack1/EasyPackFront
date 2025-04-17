@@ -13,12 +13,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      
       "supportsTablet": true,
       "bundleIdentifier": "com.ginzagom.EasyPackApp",
       "infoPlist": {
-    "NSCameraUsageDescription": "이 앱은 카메라 접근을 위해 사용자의 허가가 필요합니다."
-  }
+        "NSCameraUsageDescription": "이 앱은 카메라 접근을 위해 사용자의 허가가 필요합니다."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -29,6 +28,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "4948eea2-5f00-4784-a03d-31d516c3bd7b"
+      }
     }
   }
 }

@@ -11,7 +11,7 @@ const SettingsScreen = ({ navigation }) => {
     userId: '',
     password: '',
     nickname: '',
-    country: '',
+    travelDestination: '',
     airline: '',
   });
 
@@ -36,7 +36,7 @@ const SettingsScreen = ({ navigation }) => {
           userId: data.userId,
           password: '',
           nickname: data.nickname || '',
-          country: data.travelDestination || '',
+          travelDestination: data.travelDestination || '',
           airline: data.airline || '',
         });
       } catch (error) {
@@ -62,7 +62,7 @@ const SettingsScreen = ({ navigation }) => {
       const bodyData = {
         userId: userInfo.userId,
         nickname: userInfo.nickname,
-        travelDestination: userInfo.country,
+        travel_destination: userInfo.travelDestination,
         airline: userInfo.airline,
       };
 
@@ -85,7 +85,6 @@ const SettingsScreen = ({ navigation }) => {
       console.log('📤 저장 응답:', response.status, resText);
 
       if (response.ok && resText.toLowerCase().includes('success')) {
-        // ✅ 최신 유저 정보 다시 받아와서 AsyncStorage에 저장
         const updatedRes = await fetch('http://13.236.230.193:8082/api/auth/user/me', {
           method: 'GET',
           headers: { Authorization: `Bearer ${token}` },
@@ -159,8 +158,8 @@ const SettingsScreen = ({ navigation }) => {
         <View style={styles.inputBox}>
           <Text style={styles.label}>여행 국가</Text>
           <RNPickerSelect
-            onValueChange={(value) => handleChange('country', value)}
-            value={userInfo.country}
+            onValueChange={(value) => handleChange('travelDestination', value)}
+            value={userInfo.travelDestination}
             placeholder={{ label: '국가 선택', value: null }}
             items={[
               { label: '베트남', value: 'vietnam' },

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
   ScrollView, View, Text, TextInput, StyleSheet,
-  TouchableOpacity, Image, SafeAreaView, Alert, ActivityIndicator
+  TouchableOpacity, Image, SafeAreaView, Alert, ActivityIndicator,
+  Platform, ActionSheetIOS,
 } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -111,6 +112,50 @@ const SettingsScreen = ({ navigation }) => {
     }
   };
 
+  const renderPicker = (field, label, value, items) => {
+    if (Platform.OS === 'ios') {
+      return (
+        <View style={styles.inputBox}>
+          <Text style={styles.label}>{label}</Text>
+          <TouchableOpacity
+            style={[styles.input, { justifyContent: 'center' }]}
+            onPress={() => {
+              const options = items.map(item => item.label);
+              ActionSheetIOS.showActionSheetWithOptions(
+                {
+                  options: [...options, '취소'],
+                  cancelButtonIndex: options.length,
+                },
+                (buttonIndex) => {
+                  if (buttonIndex !== options.length) {
+                    handleChange(field, items[buttonIndex].value);
+                  }
+                }
+              );
+            }}
+          >
+            <Text style={{ fontSize: 16, color: value ? 'black' : '#888' }}>
+              {items.find(item => item.value === value)?.label || '선택하세요'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      );
+    } else {
+      return (
+        <View style={styles.inputBox}>
+          <Text style={styles.label}>{label}</Text>
+          <RNPickerSelect
+            onValueChange={(val) => handleChange(field, val)}
+            value={value}
+            placeholder={{ label: `${label} 선택`, value: null }}
+            items={items}
+            style={pickerSelectStyles}
+          />
+        </View>
+      );
+    }
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
@@ -155,39 +200,21 @@ const SettingsScreen = ({ navigation }) => {
           />
         </View>
 
-        <View style={styles.inputBox}>
-          <Text style={styles.label}>여행 국가</Text>
-          <RNPickerSelect
-            onValueChange={(value) => handleChange('travelDestination', value)}
-            value={userInfo.travelDestination}
-            placeholder={{ label: '국가 선택', value: null }}
-            items={[
-              { label: '베트남', value: 'vietnam' },
-              { label: '미국', value: 'usa' },
-              { label: '일본', value: 'japan' },
-              { label: '태국', value: 'thailand' },
-              { label: '필리핀', value: 'philippines' },
-            ]}
-            style={pickerSelectStyles}
-          />
-        </View>
+        {renderPicker('travelDestination', '여행 국가', userInfo.travelDestination, [
+          { label: '베트남', value: 'vietnam' },
+          { label: '미국', value: 'usa' },
+          { label: '일본', value: 'japan' },
+          { label: '태국', value: 'thailand' },
+          { label: '필리핀', value: 'philippines' },
+        ])}
 
-        <View style={styles.inputBox}>
-          <Text style={styles.label}>항공사</Text>
-          <RNPickerSelect
-            onValueChange={(value) => handleChange('airline', value)}
-            value={userInfo.airline}
-            placeholder={{ label: '항공사 선택', value: null }}
-            items={[
-              { label: '대한항공', value: '대한항공' },
-              { label: '아시아나항공', value: '아시아나항공' },
-              { label: '제주항공', value: '제주항공' },
-              { label: '티웨이항공', value: '티웨이항공' },
-              { label: '진에어항공', value: '진에어항공' },
-            ]}
-            style={pickerSelectStyles}
-          />
-        </View>
+        {renderPicker('airline', '항공사', userInfo.airline, [
+          { label: '대한항공', value: '대한항공' },
+          { label: '아시아나항공', value: '아시아나항공' },
+          { label: '제주항공', value: '제주항공' },
+          { label: '티웨이항공', value: '티웨이항공' },
+          { label: '진에어항공', value: '진에어항공' },
+        ])}
 
         <TouchableOpacity style={styles.saveButton} onPress={handleSave} disabled={saving}>
           <Text style={styles.saveButtonText}>{saving ? '저장 중...' : '수정'}</Text>

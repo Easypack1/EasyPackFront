@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Camera, CameraView } from 'expo-camera';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function CameraScreen({ navigation }) {
   const [hasPermission, setHasPermission] = useState(null);
@@ -15,6 +16,11 @@ export default function CameraScreen({ navigation }) {
   const [isDetecting, setIsDetecting] = useState(false);
   const cameraRef = useRef(null);
 
+  // 여행지 및 항공사 정보 상태
+  const [travelDestination, setTravelDestination] = useState('');
+  const [airline, setAirline] = useState('');
+
+  // 권한 요청 + 사용자 정보 불러오기
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
@@ -23,6 +29,16 @@ export default function CameraScreen({ navigation }) {
         setCameraType(Camera?.Constants?.Type?.back ?? 0);
       } else {
         setHasPermission(false);
+      }
+
+      try {
+        const destination = await AsyncStorage.getItem('travelDestination');
+        const airlineData = await AsyncStorage.getItem('airline');
+        setTravelDestination(destination || '');
+        setAirline(airlineData || '');
+      } catch (err) {
+        console.error('❌ AsyncStorage 오류:', err);
+        Alert.alert('오류', '여행지 정보를 불러오지 못했습니다.');
       }
     })();
   }, []);
@@ -40,6 +56,8 @@ export default function CameraScreen({ navigation }) {
       const response = await fetch('http://13.236.230.193:8000/predict', {
         method: 'POST',
         headers: {
+          'x-country': travelDestination,
+          'x-airline': airline,
           'Content-Type': 'multipart/form-data',
         },
         body: formData,

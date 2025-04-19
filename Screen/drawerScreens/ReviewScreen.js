@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -41,66 +51,73 @@ const ReviewScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* 헤더 */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.navigate('CommunityScreenStack')}>
-          <Ionicons name="arrow-back" size={24} color="black" />
-        </TouchableOpacity>
-        <Text style={styles.headerText}>여행기를 작성해주세요</Text>
-      </View>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      style={{ flex: 1 }}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
+          {/* 헤더 */}
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.navigate('CommunityScreenStack')}>
+              <Ionicons name="arrow-back" size={24} color="black" />
+            </TouchableOpacity>
+            <Text style={styles.headerText}>여행기를 작성해주세요</Text>
+          </View>
 
-      {/* 나라 선택 */}
-      <View style={styles.countryListContainer}>
-        {countryList.map((item) => (
-          <TouchableOpacity
-            key={item}
-            style={[
-              styles.countryButton,
-              selectedCountry === item && styles.activeCountry,
-            ]}
-            onPress={() => setSelectedCountry(item)}
-          >
-            <Text
-              style={[
-                styles.countryText,
-                selectedCountry === item && styles.activeCountryText,
-              ]}
-            >
-              {item}
-            </Text>
+          {/* 나라 선택 */}
+          <View style={styles.countryListContainer}>
+            {countryList.map((item) => (
+              <TouchableOpacity
+                key={item}
+                style={[
+                  styles.countryButton,
+                  selectedCountry === item && styles.activeCountry,
+                ]}
+                onPress={() => setSelectedCountry(item)}
+              >
+                <Text
+                  style={[
+                    styles.countryText,
+                    selectedCountry === item && styles.activeCountryText,
+                  ]}
+                >
+                  {item}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* 별점 선택 */}
+          <View style={styles.starContainer}>
+            {[1, 2, 3, 4, 5].map((star) => (
+              <TouchableOpacity key={star} onPress={() => setRating(star)}>
+                <Ionicons
+                  name={rating >= star ? 'star' : 'star-outline'}
+                  size={28}
+                  color={rating >= star ? '#FFD700' : '#CCCCCC'}
+                />
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* 리뷰 입력 박스 */}
+          <TextInput
+            style={styles.inputBox}
+            multiline
+            placeholder="여행기록을 남겨보세요!"
+            placeholderTextColor="#999"
+            value={review}
+            onChangeText={setReview}
+          />
+
+          {/* 제출 버튼 */}
+          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+            <Text style={styles.submitButtonText}>제출</Text>
           </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* 별점 선택 */}
-      <View style={styles.starContainer}>
-        {[1, 2, 3, 4, 5].map((star) => (
-          <TouchableOpacity key={star} onPress={() => setRating(star)}>
-            <Ionicons
-              name={rating >= star ? 'star' : 'star-outline'}
-              size={28}
-              color={rating >= star ? '#FFD700' : '#CCCCCC'}
-            />
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* 리뷰 입력 박스 */}
-      <TextInput
-        style={styles.inputBox}
-        multiline
-        placeholder="여행기록을 남겨보세요!"
-        placeholderTextColor="#999"
-        value={review}
-        onChangeText={setReview}
-      />
-
-      {/* 제출 버튼 */}
-      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-        <Text style={styles.submitButtonText}>제출</Text>
-      </TouchableOpacity>
-    </View>
+        </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -148,12 +165,10 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   starContainer: {
-    
     flexDirection: 'row',
     justifyContent: 'center',
     marginBottom: 10,
     marginTop: 20,
-    
   },
   inputBox: {
     height: 300,

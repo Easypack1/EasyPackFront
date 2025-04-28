@@ -11,7 +11,7 @@ import InfoScreen from './drawerScreens/InfoScreen';
 import InfoScreen2 from './drawerScreens/InfoScreen2';
 import InfoScreen3 from './drawerScreens/InfoScreen3';
 import ReviewScreen from './drawerScreens/ReviewScreen';
-
+import AirlineInfoScreen from './/drawerScreens/AirlineInfoScreen';
 import CustomSidebarMenu from './Components/CustomSidebarMenu';
 import BackBtn from './Components/BackBtn';
 
@@ -130,6 +130,11 @@ const DrawerNavigatorRoutes = () => {
         name="ReviewScreenStack"
         options={{ drawerLabel: 'Review' }}
         component={createScreenStack('ReviewScreen', ReviewScreen, 'Review')}
+      />
+      <Drawer.Screen
+        name="AirlineInfoScreenStack"
+        options={{ drawerLabel: 'Airline' }}
+        component={createScreenStack('AirlineInfoScreen', AirlineInfoScreen, 'Airline')}
       />
     </Drawer.Navigator>
   );

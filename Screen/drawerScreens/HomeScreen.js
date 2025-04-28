@@ -43,7 +43,7 @@ const HomeScreen = ({ navigation }) => {
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      fetchUserInfo(); // 화면 진입 시 최신 정보 불러오기
+      fetchUserInfo(); 
     });
     return unsubscribe;
   }, [navigation]);
@@ -89,6 +89,7 @@ const HomeScreen = ({ navigation }) => {
       case 'japan': return require('../../Image/japan.jpeg');
       case 'thailand': return require('../../Image/thailand.jpeg');
       case 'philippines': return require('../../Image/philippines.jpeg');
+      default: return require('../../Image/default.jpeg'); // 혹시 null 대비
     }
   };
 
@@ -136,7 +137,12 @@ const HomeScreen = ({ navigation }) => {
       </View>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={[styles.button, styles.buttonWhite]}>
+        <TouchableOpacity
+          style={[styles.button, styles.buttonWhite]}
+          onPress={() => navigation.navigate('AirlineInfoScreenStack', {
+            airline: userData?.airline || null,
+          })}
+        >
           <View style={styles.buttonContent}>
             <Text style={styles.buttonTextGrey}>나의 항공사 규정 확인하러 가기</Text>
             <Image source={require('../../Image/point.png')} style={styles.buttonImage} />
@@ -166,6 +172,7 @@ const HomeScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  // (styles는 그대로)
   container: { flex: 1, padding: 16, backgroundColor: '#f9f9f9' },
   content: { alignItems: 'center', justifyContent: 'center', width: '100%' },
   title: { fontSize: 32, fontWeight: 'bold', marginBottom: 20 },

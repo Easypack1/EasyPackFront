@@ -1,33 +1,64 @@
-// DetectedInfoScreen.js
-import React from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const DetectedInfoScreen = ({ route, navigation }) => {
   const { label, imageUri } = route.params;
+  const [guidanceText, setGuidanceText] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const getGuidanceText = (label) => {
-    const l = label.toLowerCase();
-    switch (l) {
-      case 'bottle':
-        return '이 물품은 액체류로 간주될 수 있습니다. 100ml 이하 용기에 담아 투명 지퍼백에 보관하세요.';
-      case 'laptop':
-        return '노트북은 보안 검색 시 별도로 꺼내 검사해야 합니다.';
-      case 'suitcase':
-      case 'backpack':
-        return '기내 수하물 또는 위탁 수하물로 분류될 수 있으며 크기와 무게 제한을 확인하세요.';
-      case 'phone':
-        return '휴대폰은 전자기기로 기내 반입 가능하지만, 비행 중 모드 전환이 필요할 수 있습니다.';
-      default:
-        return '이 사물에 대한 구체적인 안내 정보가 없습니다. 공항 보안 요원의 지시에 따르세요.';
+  // ✅ 서버에 감지 정보 보내고, 안내문구 받아오기
+  const fetchDetectedInfo = async () => {
+    try {
+      const token = await AsyncStorage.getItem('accessToken'); // 필요하면 가져오기
+      const response = await fetch('http://13.236.230.193:8000/predict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          label: label,
+          imageUrl: imageUri,
+          detectedAt: new Date().toISOString(),
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ 서버 응답:', data);
+        setGuidanceText(data.guidanceText); // 서버가 내려준 안내문구
+      } else {
+        console.error('❌ 서버 오류', await response.text());
+        setGuidanceText('안내 정보를 가져오는 데 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('❌ 통신 오류', error);
+      setGuidanceText('서버 연결 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchDetectedInfo();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#3886a8" />
+        <Text>정보를 불러오는 중입니다...</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>감지된 사물: {label.toUpperCase()}</Text>
       <Image source={{ uri: imageUri }} style={styles.image} />
       <Text style={styles.subtitle}>안내 사항</Text>
-      <Text style={styles.guidance}>{getGuidanceText(label)}</Text>
+      <Text style={styles.guidance}>{guidanceText}</Text>
 
       <TouchableOpacity onPress={() => navigation.goBack()} style={styles.button}>
         <Text style={styles.buttonText}>돌아가기</Text>
@@ -41,6 +72,11 @@ export default DetectedInfoScreen;
 const styles = StyleSheet.create({
   container: {
     padding: 20,
+    alignItems: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
   },
   title: {

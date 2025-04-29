@@ -11,7 +11,7 @@ import InfoScreen from './drawerScreens/InfoScreen';
 import InfoScreen2 from './drawerScreens/InfoScreen2';
 import InfoScreen3 from './drawerScreens/InfoScreen3';
 import ReviewScreen from './drawerScreens/ReviewScreen';
-import AirlineInfoScreen from './/drawerScreens/AirlineInfoScreen';
+import AirlineInfoScreen from './drawerScreens/AirlineInfoScreen';
 import CustomSidebarMenu from './Components/CustomSidebarMenu';
 import BackBtn from './Components/BackBtn';
 
@@ -20,21 +20,25 @@ const Drawer = createDrawerNavigator();
 console.log('📸 CameraScreen is:', typeof CameraScreen, CameraScreen);
 
 // ✅ 공통 Stack 생성 함수 (단순한 페이지용)
-const createScreenStack = (name, Component, navigationTitle) => {
+const createScreenStack = (name, Component) => {
   return ({ navigation }) => (
     <Stack.Navigator>
       <Stack.Screen
         name={name}
         component={Component}
         options={{
-          title: navigationTitle,
+          title: '', // ✅ 헤더 텍스트 제거
           headerLeft: name === 'HomeScreen'
             ? undefined
             : () => <BackBtn onPress={() => navigation.goBack()} />,
+          headerShadowVisible: false,
           headerStyle: {
-            backgroundColor: '#307ecc',
+            backgroundColor: '#f9f9f9',
+            elevation: 0,
+            shadowOpacity: 0,
+            borderBottomWidth: 0,
           },
-          headerTintColor: '#fff',
+          headerTintColor: 'black',
           headerTitleStyle: {
             fontWeight: 'bold',
           },
@@ -51,9 +55,13 @@ const CameraStack = () => (
       name="CameraScreen"
       component={CameraScreen}
       options={{
-        title: 'Camera',
+        title: '', // ✅ 헤더 텍스트 제거
+        headerShadowVisible: false,
         headerStyle: {
           backgroundColor: '#307ecc',
+          elevation: 0,
+          shadowOpacity: 0,
+          borderBottomWidth: 0,
         },
         headerTintColor: '#fff',
         headerTitleStyle: {
@@ -65,10 +73,14 @@ const CameraStack = () => (
       name="DetectedInfoScreen"
       component={DetectedInfoScreen}
       options={{
-        title: 'Detected Info',
+        title: '', // ✅ 헤더 텍스트 제거
         headerBackTitleVisible: false,
+        headerShadowVisible: false,
         headerStyle: {
           backgroundColor: '#307ecc',
+          elevation: 0,
+          shadowOpacity: 0,
+          borderBottomWidth: 0,
         },
         headerTintColor: '#fff',
         headerTitleStyle: {
@@ -94,47 +106,47 @@ const DrawerNavigatorRoutes = () => {
       <Drawer.Screen
         name="HomeScreenStack"
         options={{ drawerLabel: 'Home' }}
-        component={createScreenStack('HomeScreen', HomeScreen, 'Home')}
+        component={createScreenStack('HomeScreen', HomeScreen)}
       />
       <Drawer.Screen
         name="SettingsScreenStack"
         options={{ drawerLabel: 'Settings' }}
-        component={createScreenStack('SettingsScreen', SettingsScreen, 'Settings')}
+        component={createScreenStack('SettingsScreen', SettingsScreen)}
       />
       <Drawer.Screen
         name="CameraScreenStack"
         options={{ drawerLabel: 'Camera' }}
-        component={CameraStack} // ✅ DetectedInfo 포함된 Stack 사용
+        component={CameraStack}
       />
       <Drawer.Screen
         name="CommunityScreenStack"
         options={{ drawerLabel: 'Community' }}
-        component={createScreenStack('CommunityScreen', CommunityScreen, 'Community')}
+        component={createScreenStack('CommunityScreen', CommunityScreen)}
       />
       <Drawer.Screen
         name="InfoScreenStack"
         options={{ drawerLabel: 'Info' }}
-        component={createScreenStack('InfoScreen', InfoScreen, 'Info')}
+        component={createScreenStack('InfoScreen', InfoScreen)}
       />
       <Drawer.Screen
         name="InfoScreen2Stack"
         options={{ drawerLabel: 'Info 2' }}
-        component={createScreenStack('InfoScreen2', InfoScreen2, 'Info 2')}
+        component={createScreenStack('InfoScreen2', InfoScreen2)}
       />
       <Drawer.Screen
         name="InfoScreen3Stack"
         options={{ drawerLabel: 'Info 3' }}
-        component={createScreenStack('InfoScreen3', InfoScreen3, 'Info 3')}
+        component={createScreenStack('InfoScreen3', InfoScreen3)}
       />
       <Drawer.Screen
         name="ReviewScreenStack"
         options={{ drawerLabel: 'Review' }}
-        component={createScreenStack('ReviewScreen', ReviewScreen, 'Review')}
+        component={createScreenStack('ReviewScreen', ReviewScreen)}
       />
       <Drawer.Screen
         name="AirlineInfoScreenStack"
         options={{ drawerLabel: 'Airline' }}
-        component={createScreenStack('AirlineInfoScreen', AirlineInfoScreen, 'Airline')}
+        component={createScreenStack('AirlineInfoScreen', AirlineInfoScreen)}
       />
     </Drawer.Navigator>
   );

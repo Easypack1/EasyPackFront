@@ -80,7 +80,6 @@ const styles = StyleSheet.create({
     color: 'navy',
     fontSize: 24,
     marginLeft: 10,
-    marginTop: 20,
     fontWeight: 'bold',
   },
   row: {

@@ -225,10 +225,10 @@ const SettingsScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: '#f9f9f9' },
   scrollContainer: { alignItems: 'center', paddingBottom: 24 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  header: { fontSize: 28, fontWeight: 'bold', marginTop: 24, marginBottom: 20 },
+  header: { fontSize: 28, fontWeight: 'bold', marginTop: 10, marginBottom: 20 },
   profileImageContainer: { alignItems: 'center', marginBottom: 20 },
   profileImage: { width: 80, height: 80, borderRadius: 40 },
   inputBox: { width: '90%', marginBottom: 15 },

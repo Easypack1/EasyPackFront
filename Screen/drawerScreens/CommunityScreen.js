@@ -105,7 +105,7 @@ const CommunityScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 50, backgroundColor: '#fff' },
+  container: { flex: 1, paddingTop: 25, backgroundColor: '#f9f9f9' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

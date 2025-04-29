@@ -57,9 +57,6 @@ const CommunityScreen = () => {
     <View style={styles.container}>
       {/* 헤더 */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="black" />
-        </TouchableOpacity>
         <Text style={styles.title}>커뮤니티</Text>
         <TouchableOpacity onPress={() => navigation.navigate('ReviewScreenStack')}>
           <Ionicons name="create-outline" size={24} color="black" />

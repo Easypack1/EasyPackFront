@@ -77,13 +77,13 @@ const HomeScreen = ({ navigation }) => {
   };
 
   useEffect(() => {
-    if (userData?.travelDestination) {
-      getWeather(userData.travelDestination);
+    if (userData?.travel_destination) {
+      getWeather(userData.travel_destination);
     }
   }, [userData]);
 
   const getBackgroundImage = () => {
-    switch (userData?.travelDestination) {
+    switch (userData?.travel_destination) {
       case 'vietnam': return require('../../Image/vietnam.jpeg');
       case 'usa': return require('../../Image/usa.jpeg');
       case 'japan': return require('../../Image/japan.jpeg');

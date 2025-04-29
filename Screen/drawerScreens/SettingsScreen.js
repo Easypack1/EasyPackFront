@@ -12,7 +12,7 @@ const SettingsScreen = ({ navigation }) => {
     userId: '',
     password: '',
     nickname: '',
-    travelDestination: '',
+    travel_destination: '',
     airline: '',
   });
 
@@ -37,7 +37,7 @@ const SettingsScreen = ({ navigation }) => {
           userId: data.userId,
           password: '',
           nickname: data.nickname || '',
-          travelDestination: data.travelDestination || '',
+          travel_destination: data.travel_destination || '',
           airline: data.airline || '',
         });
       } catch (error) {
@@ -63,7 +63,7 @@ const SettingsScreen = ({ navigation }) => {
       const bodyData = {
         userId: userInfo.userId,
         nickname: userInfo.nickname,
-        travel_destination: userInfo.travelDestination,
+        travel_destination: userInfo.travel_destination,
         airline: userInfo.airline,
       };
 
@@ -85,7 +85,7 @@ const SettingsScreen = ({ navigation }) => {
       const resText = await response.text();
       console.log('📤 저장 응답:', response.status, resText);
 
-      if (response.ok && resText.toLowerCase().includes('success')) {
+      if (response.ok) {
         const updatedRes = await fetch('http://13.236.230.193:8082/api/auth/user/me', {
           method: 'GET',
           headers: { Authorization: `Bearer ${token}` },
@@ -200,7 +200,7 @@ const SettingsScreen = ({ navigation }) => {
           />
         </View>
 
-        {renderPicker('travelDestination', '여행 국가', userInfo.travelDestination, [
+        {renderPicker('travel_destination', '여행 국가', userInfo.travel_destination, [
           { label: '베트남', value: 'vietnam' },
           { label: '미국', value: 'usa' },
           { label: '일본', value: 'japan' },

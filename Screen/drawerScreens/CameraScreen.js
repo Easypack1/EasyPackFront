@@ -17,7 +17,7 @@ export default function CameraScreen({ navigation }) {
   const cameraRef = useRef(null);
 
   // 여행지 및 항공사 정보 상태
-  const [travelDestination, setTravelDestination] = useState('');
+  const [travel_destination, setTravelDestination] = useState('');
   const [airline, setAirline] = useState('');
 
   // 권한 요청 + 사용자 정보 불러오기
@@ -32,7 +32,7 @@ export default function CameraScreen({ navigation }) {
       }
 
       try {
-        const destination = await AsyncStorage.getItem('travelDestination');
+        const destination = await AsyncStorage.getItem('travel_destination');
         const airlineData = await AsyncStorage.getItem('airline');
         setTravelDestination(destination || '');
         setAirline(airlineData || '');
@@ -56,7 +56,7 @@ export default function CameraScreen({ navigation }) {
       const response = await fetch('http://13.236.230.193:8000/predict', {
         method: 'POST',
         headers: {
-          'x-country': travelDestination,
+          'x-country': travel_destination,
           'x-airline': airline,
           'Content-Type': 'multipart/form-data',
         },

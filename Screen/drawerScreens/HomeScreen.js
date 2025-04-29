@@ -144,7 +144,7 @@ const HomeScreen = ({ navigation }) => {
           })}
         >
           <View style={styles.buttonContent}>
-            <Text style={styles.buttonTextGrey}>나의 항공사 규정 확인하러 가기</Text>
+            <Text style={styles.buttonTextGrey}>나의 수하물 무게 규정 확인하러 가기</Text>
             <Image source={require('../../Image/point.png')} style={styles.buttonImage} />
           </View>
         </TouchableOpacity>

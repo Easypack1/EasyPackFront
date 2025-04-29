@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, Image, TextInput, TouchableOpacity, Alert, Animated } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const airlineLogos = {
   대한항공: require('../../Image/koreanAir.png'),
@@ -9,12 +10,34 @@ const airlineLogos = {
   진에어항공: require('../../Image/jinair.png'),
 };
 
-const AirlineInfoScreen = ({ route }) => {
-  const { airline } = route.params || {};
+const AirlineInfoScreen = () => {
+  const [userData, setUserData] = useState(null);
   const [overweightKg, setOverweightKg] = useState('');
   const [targetFee, setTargetFee] = useState(0);
   const animatedFee = useRef(new Animated.Value(0)).current;
-  const cardOpacity = useRef(new Animated.Value(0)).current; // 카드 등장 애니메이션
+  const cardOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const token = await AsyncStorage.getItem('accessToken');
+        const response = await fetch('http://13.236.230.193:8082/api/auth/user/me', {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await response.json();
+        setUserData(data);
+      } catch (error) {
+        console.error('❌ 사용자 정보 불러오기 실패:', error);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
+
+  const airline = userData?.airline || null;
 
   const getAirlineRules = (airlineName) => {
     switch (airlineName) {
@@ -37,7 +60,6 @@ const AirlineInfoScreen = ({ route }) => {
     switch (airlineName) {
       case '대한항공':
       case '아시아나항공':
-        return 10000;
       case '티웨이항공':
         return 10000;
       case '제주항공':
@@ -108,13 +130,9 @@ const AirlineInfoScreen = ({ route }) => {
             {targetFee !== 0 && (
               <Animated.View style={[styles.resultCard, { opacity: cardOpacity }]}>
                 <Text style={styles.resultTitle}>💰 예상 추가 요금</Text>
-                <Animated.Text style={styles.resultFee}>
-                  {animatedFee.interpolate({
-                    inputRange: [0, targetFee],
-                    outputRange: [0, targetFee],
-                    extrapolate: 'clamp',
-                  }).__getValue().toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}원
-                </Animated.Text>
+                <Text style={styles.resultFee}>
+                  {targetFee.toLocaleString()}원
+                </Text>
               </Animated.View>
             )}
           </View>
@@ -127,7 +145,7 @@ const AirlineInfoScreen = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', padding: 20, backgroundColor: '#f0f8ff' },
+  container: { flex: 1, alignItems: 'center', padding: 20, backgroundColor: '#f9f9f9' },
   header: { alignItems: 'center', marginBottom: 30 },
   logo: { width: 120, height: 80, marginBottom: 10 },
   airlineName: { fontSize: 26, fontWeight: 'bold', color: '#0077b6' },

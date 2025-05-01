@@ -1,11 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
+  View, Text, StyleSheet, TouchableOpacity,
+  Alert, ActivityIndicator, TextInput,
 } from 'react-native';
 import { Camera, CameraView } from 'expo-camera';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -14,36 +10,25 @@ export default function CameraScreen({ navigation }) {
   const [hasPermission, setHasPermission] = useState(null);
   const [cameraType, setCameraType] = useState(null);
   const [isDetecting, setIsDetecting] = useState(false);
+  const [detectionFailed, setDetectionFailed] = useState(false);
+  const [manualLabel, setManualLabel] = useState('');
   const cameraRef = useRef(null);
 
-  // 여행지 및 항공사 정보 상태
-  const [travel_destination, setTravelDestination] = useState('');
-  const [airline, setAirline] = useState('');
-
-  // 권한 요청 + 사용자 정보 불러오기
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
-      if (status === 'granted') {
-        setHasPermission(true);
-        setCameraType(Camera?.Constants?.Type?.back ?? 0);
-      } else {
-        setHasPermission(false);
-      }
-
-      try {
-        const destination = await AsyncStorage.getItem('travel_destination');
-        const airlineData = await AsyncStorage.getItem('airline');
-        setTravelDestination(destination || '');
-        setAirline(airlineData || '');
-      } catch (err) {
-        console.error('❌ AsyncStorage 오류:', err);
-        Alert.alert('오류', '여행지 정보를 불러오지 못했습니다.');
-      }
+      console.log('📷 카메라 권한 상태:', status);
+      setHasPermission(status === 'granted');
+      setCameraType(Camera?.Constants?.Type?.back ?? 0);
     })();
   }, []);
 
   const sendToServer = async (photoUri) => {
+    const destination = await AsyncStorage.getItem('travelDestination');
+    const airline = await AsyncStorage.getItem('airline');
+
+    console.log('📤 AsyncStorage에서 로딩된 값 →', { destination, airline });
+
     const formData = new FormData();
     formData.append('file', {
       uri: photoUri,
@@ -53,53 +38,95 @@ export default function CameraScreen({ navigation }) {
 
     try {
       setIsDetecting(true);
+      setDetectionFailed(false);
+
       const response = await fetch('http://13.236.230.193:8000/predict', {
         method: 'POST',
         headers: {
-          'x-country': travel_destination,
-          'x-airline': airline,
-          'Content-Type': 'multipart/form-data',
+          'x-country': destination || 'unknown',
+          'x-airline': airline || 'unknown',
         },
         body: formData,
       });
 
       const result = await response.json();
-      console.log('🧠 YOLO 감지 결과:', result);
+      console.log('🧠 YOLO 감지 결과 JSON:', result);
 
       if (result.detections?.length > 0) {
-        const firstObject = result.detections[0];
-        const label = firstObject.label;
-
+        const detected = result.detections[0];
         navigation.navigate('DetectedInfoScreen', {
-          label,
+          label: detected.label,
+          description: detected.description || '안내 정보가 없습니다.',
           imageUri: photoUri,
         });
       } else {
-        Alert.alert('감지된 물체 없음', '아무것도 감지되지 않았어요.');
+        setDetectionFailed(true);
       }
     } catch (err) {
       console.error('❌ 서버 요청 오류:', err);
-      Alert.alert('에러', '서버 요청 중 문제가 발생했습니다.');
+      Alert.alert('서버 오류', '감지 정보를 가져오는 데 실패했습니다.');
     } finally {
       setIsDetecting(false);
     }
   };
 
   const handleCapture = async () => {
-    if (cameraRef.current) {
-      try {
-        const photo = await cameraRef.current.takePictureAsync();
-        if (photo?.uri) {
-          await sendToServer(photo.uri);
-        } else {
-          Alert.alert('오류', '사진 촬영에 실패했습니다.');
-        }
-      } catch (error) {
-        console.error('📸 촬영 오류:', error);
-        Alert.alert('에러', '촬영 도중 오류가 발생했습니다.');
-      }
-    } else {
-      Alert.alert('오류', '카메라가 준비되지 않았습니다.');
+    if (!cameraRef.current) {
+      Alert.alert('카메라 준비 중');
+      return;
+    }
+
+    try {
+      const photo = await cameraRef.current.takePictureAsync();
+      console.log('📸 촬영된 사진:', photo);
+      if (photo?.uri) await sendToServer(photo.uri);
+    } catch (error) {
+      console.error('📷 촬영 오류:', error);
+      Alert.alert('촬영 중 오류 발생');
+    }
+  };
+
+  const handleManualSubmit = async () => {
+    if (!manualLabel.trim()) {
+      Alert.alert('입력 오류', '물품 이름을 입력해주세요.');
+      return;
+    }
+
+    try {
+      setIsDetecting(true);
+
+      const destination = await AsyncStorage.getItem('travelDestination');
+      const airline = await AsyncStorage.getItem('airline');
+
+      const response = await fetch('http://13.236.230.193:8000/predict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-country': destination || 'unknown',
+          'x-airline': airline || 'unknown',
+        },
+        body: JSON.stringify({
+          label: manualLabel.trim(),
+          imageUrl: null,
+          detectedAt: new Date().toISOString(),
+        }),
+      });
+
+      const result = await response.json();
+      console.log('🧠 수동 입력 결과:', result);
+
+      navigation.navigate('DetectedInfoScreen', {
+        label: manualLabel.trim(),
+        description: result.description || result.guidance || '안내 정보가 없습니다.',
+        imageUri: null,
+      });
+    } catch (err) {
+      console.error('❌ 수동 입력 서버 오류:', err);
+      Alert.alert('서버 오류', '정보를 불러올 수 없습니다.');
+    } finally {
+      setIsDetecting(false);
+      setDetectionFailed(false);
+      setManualLabel('');
     }
   };
 
@@ -129,30 +156,54 @@ export default function CameraScreen({ navigation }) {
         ratio="16:9"
       />
 
-      {/* 🎯 촬영 버튼 */}
-      <View style={styles.controls}>
-        <TouchableOpacity
-          style={styles.captureButton}
-          onPress={handleCapture}
-          disabled={isDetecting}
-        >
-          <Text style={styles.captureText}>
-            {isDetecting ? '분석 중...' : '촬영하기'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      {!detectionFailed && (
+        <View style={styles.controls}>
+          <TouchableOpacity
+            style={styles.captureButton}
+            onPress={handleCapture}
+            disabled={isDetecting}
+          >
+            <Text style={styles.captureText}>
+              {isDetecting ? '분석 중...' : '촬영하기'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {detectionFailed && (
+        <View style={styles.manualInputArea}>
+          <Text style={styles.manualPrompt}>감지 실패: 직접 입력해주세요</Text>
+
+          <TextInput
+            style={styles.textInput}
+            placeholder="예: 칫솔, 노트북"
+            placeholderTextColor="#ccc"
+            value={manualLabel}
+            onChangeText={setManualLabel}
+          />
+
+          <TouchableOpacity style={styles.submitButton} onPress={handleManualSubmit}>
+            <Text style={styles.submitButtonText}>제출하기</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => {
+              setDetectionFailed(false);
+              setManualLabel('');
+            }}
+          >
+            <Text style={styles.retryText}>🔄 재촬영</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'black',
-  },
-  camera: {
-    flex: 1,
-  },
+  container: { flex: 1, backgroundColor: 'black' },
+  camera: { flex: 1 },
   controls: {
     position: 'absolute',
     bottom: 30,
@@ -169,6 +220,50 @@ const styles = StyleSheet.create({
   captureText: {
     color: '#fff',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  manualInputArea: {
+    position: 'absolute',
+    bottom: 60,
+    width: '100%',
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    zIndex: 60,
+  },
+  manualPrompt: {
+    color: '#fff',
+    marginBottom: 10,
+    fontSize: 16,
+  },
+  textInput: {
+    width: '100%',
+    padding: 10,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    marginBottom: 10,
+    fontSize: 16,
+  },
+  submitButton: {
+    backgroundColor: '#3886a8',
+    padding: 12,
+    borderRadius: 10,
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  submitButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  retryButton: {
+    backgroundColor: '#ff6666',
+    padding: 12,
+    borderRadius: 10,
+    width: '100%',
+    alignItems: 'center',
+  },
+  retryText: {
+    color: '#fff',
     fontWeight: 'bold',
   },
   centered: {

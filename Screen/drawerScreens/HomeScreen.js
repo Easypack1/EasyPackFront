@@ -36,6 +36,9 @@ const HomeScreen = ({ navigation }) => {
       const data = await response.json();
       console.log('🏡 최신 사용자 정보:', data);
       setUserData(data);
+      await AsyncStorage.setItem('travelDestination', data.travel_destination || '');
+      await AsyncStorage.setItem('airline', data.airline || '');
+      await AsyncStorage.setItem('userId', data.userId || '');
     } catch (error) {
       console.error('❌ 사용자 정보 불러오기 실패:', error);
     }

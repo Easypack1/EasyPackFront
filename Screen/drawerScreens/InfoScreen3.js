@@ -78,7 +78,7 @@ const InfoScreen = () => {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#ffffff',
   },
   title: {
     color: 'navy',

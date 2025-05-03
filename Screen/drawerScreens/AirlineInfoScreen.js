@@ -12,7 +12,7 @@ const airlineLogos = {
 
 const AirlineInfoScreen = () => {
   const [userData, setUserData] = useState(null);
-  const [overweightKg, setOverweightKg] = useState('');
+  const [baggageWeight, setBaggageWeight] = useState('');
   const [targetFee, setTargetFee] = useState(0);
   const animatedFee = useRef(new Animated.Value(0)).current;
   const cardOpacity = useRef(new Animated.Value(0)).current;
@@ -23,9 +23,7 @@ const AirlineInfoScreen = () => {
         const token = await AsyncStorage.getItem('accessToken');
         const response = await fetch('http://13.236.230.193:8082/api/auth/user/me', {
           method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json();
         setUserData(data);
@@ -38,6 +36,23 @@ const AirlineInfoScreen = () => {
   }, []);
 
   const airline = userData?.airline || null;
+
+  const getAllowance = (airlineName) => {
+    switch (airlineName) {
+      case '대한항공':
+        return { baggage: 23, feePerKg: 10000 };
+      case '아시아나항공':
+        return { baggage: 23, feePerKg: 10000 };
+      case '티웨이항공':
+        return { baggage: 20, feePerKg: 10000 };
+      case '제주항공':
+        return { baggage: 15, feePerKg: 2000 };
+      case '진에어항공':
+        return { baggage: 20, feePerKg: 2000 };
+      default:
+        return { baggage: 0, feePerKg: 0 };
+    }
+  };
 
   const getAirlineRules = (airlineName) => {
     switch (airlineName) {
@@ -56,37 +71,25 @@ const AirlineInfoScreen = () => {
     }
   };
 
-  const getOverweightChargePerKg = (airlineName) => {
-    switch (airlineName) {
-      case '대한항공':
-      case '아시아나항공':
-      case '티웨이항공':
-        return 10000;
-      case '제주항공':
-      case '진에어항공':
-        return 2000;
-      default:
-        return 0;
-    }
-  };
-
   const handleCalculate = () => {
-    const kg = parseFloat(overweightKg);
-    if (isNaN(kg) || kg <= 0) {
-      Alert.alert('⚠️ 숫자를 정확히 입력해 주세요.');
+    const baggage = parseFloat(baggageWeight);
+
+    if (isNaN(baggage) || baggage < 0) {
+      Alert.alert('⚠️ 위탁 수하물 무게를 정확히 입력해 주세요.');
       return;
     }
-    const feePerKg = getOverweightChargePerKg(airline);
-    const totalFee = kg * feePerKg;
-    setTargetFee(totalFee);
 
-    // 애니메이션 초기화 및 시작
+    const { baggage: baggageLimit, feePerKg } = getAllowance(airline);
+    const overBaggage = Math.max(0, baggage - baggageLimit);
+    const fee = overBaggage * feePerKg;
+
+    setTargetFee(fee);
     animatedFee.setValue(0);
     cardOpacity.setValue(0);
 
     Animated.parallel([
       Animated.timing(animatedFee, {
-        toValue: totalFee,
+        toValue: fee,
         duration: 1000,
         useNativeDriver: false,
       }),
@@ -115,24 +118,26 @@ const AirlineInfoScreen = () => {
           </View>
 
           <View style={styles.ruleBox}>
-            <Text style={styles.ruleTitle}>⚖️ 초과 무게 요금 계산기</Text>
+            <Text style={styles.ruleTitle}>⚖️ 위탁 수하물 무게 입력</Text>
             <TextInput
               style={styles.input}
-              placeholder="초과 무게를 입력하세요 (kg)"
+              placeholder="위탁 수하물 무게 (kg)"
               keyboardType="numeric"
-              value={overweightKg}
-              onChangeText={setOverweightKg}
+              value={baggageWeight}
+              onChangeText={setBaggageWeight}
             />
             <TouchableOpacity style={styles.calcButton} onPress={handleCalculate}>
               <Text style={styles.calcButtonText}>요금 계산하기</Text>
             </TouchableOpacity>
 
-            {targetFee !== 0 && (
+            {baggageWeight !== '' && (
               <Animated.View style={[styles.resultCard, { opacity: cardOpacity }]}>
-                <Text style={styles.resultTitle}>💰 예상 추가 요금</Text>
-                <Text style={styles.resultFee}>
-                  {targetFee.toLocaleString()}원
-                </Text>
+                <Text style={styles.resultTitle}>💰 예상 초과 요금</Text>
+                {targetFee > 0 ? (
+                  <Text style={styles.resultFee}>{targetFee.toLocaleString()}원</Text>
+                ) : (
+                  <Text style={styles.resultFee}>추가 요금이 없습니다 🙌</Text>
+                )}
               </Animated.View>
             )}
           </View>
@@ -145,7 +150,7 @@ const AirlineInfoScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', padding: 20, backgroundColor: '#f9f9f9' },
+  container: { flex: 1, alignItems: 'center', padding: 20, backgroundColor: '#ffffff' },
   header: { alignItems: 'center', marginBottom: 30 },
   logo: { width: 120, height: 80, marginBottom: 10 },
   airlineName: { fontSize: 26, fontWeight: 'bold', color: '#0077b6' },
@@ -176,7 +181,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3, shadowRadius: 4, elevation: 5,
   },
   resultTitle: { fontSize: 20, color: '#00796b', marginBottom: 10, fontWeight: 'bold' },
-  resultFee: { fontSize: 28, fontWeight: 'bold', color: '#d32f2f' },
+  resultFee: { fontSize: 24, fontWeight: 'bold', color: '#d32f2f', textAlign: 'center' },
 });
 
 export default AirlineInfoScreen;

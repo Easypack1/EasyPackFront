@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, SafeAreaView, TouchableOpacity,
-  TextInput, Image, StyleSheet, ActivityIndicator
+  Image, StyleSheet, ActivityIndicator
 } from 'react-native';
 import Fontisto from '@expo/vector-icons/Fontisto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -26,7 +26,6 @@ const HomeScreen = ({ navigation }) => {
   const fetchUserInfo = async () => {
     try {
       const token = await AsyncStorage.getItem('accessToken');
-      console.log('📡 fetchUserInfo() - token:', token);
       const response = await fetch('http://13.236.230.193:8082/api/auth/user/me', {
         method: 'GET',
         headers: {
@@ -34,7 +33,6 @@ const HomeScreen = ({ navigation }) => {
         },
       });
       const data = await response.json();
-      console.log('🏡 최신 사용자 정보:', data);
       setUserData(data);
       await AsyncStorage.setItem('travelDestination', data.travel_destination || '');
       await AsyncStorage.setItem('airline', data.airline || '');
@@ -46,30 +44,46 @@ const HomeScreen = ({ navigation }) => {
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      fetchUserInfo(); 
+      fetchUserInfo();
     });
     return unsubscribe;
   }, [navigation]);
 
   const getWeather = async (destination) => {
     let cityName = '';
+    let displayCityName = ''; // 한글로 보여줄 이름
+    
     switch (destination) {
-      case 'vietnam': cityName = 'Hanoi'; break;
-      case 'usa': cityName = 'New York'; break;
-      case 'japan': cityName = 'Tokyo'; break;
-      case 'thailand': cityName = 'Bangkok'; break;
-      case 'philippines': cityName = 'Manila'; break;
+      case 'vietnam':
+        cityName = 'Hanoi';
+        displayCityName = '하노이';
+        break;
+      case 'usa':
+        cityName = 'New York';
+        displayCityName = '뉴욕';
+        break;
+      case 'japan':
+        cityName = 'Tokyo';
+        displayCityName = '도쿄';
+        break;
+      case 'thailand':
+        cityName = 'Bangkok';
+        displayCityName = '방콕';
+        break;
+      case 'philippines':
+        cityName = 'Manila';
+        displayCityName = '마닐라';
+        break;
     }
-
+    
     try {
       const response = await fetch(
-        `https://api.openweathermap.org/data/2.5/forecast?q=${cityName}&appid=${API_KEY}&units=metric`
+        `https://api.openweathermap.org/data/2.5/forecast?q=${cityName}&appid=${API_KEY}&units=metric&lang=kr`
       );
-      const data = await response.json();
-
+            const data = await response.json();
       if (data.cod !== "200") throw new Error(data.message);
+      setCity(displayCityName); // 도시를 한글로 표시
 
-      setCity(data.city.name);
       const filteredList = data.list.filter(({ dt_txt }) =>
         dt_txt.endsWith("03:00:00")
       );
@@ -92,7 +106,7 @@ const HomeScreen = ({ navigation }) => {
       case 'japan': return require('../../Image/japan.jpeg');
       case 'thailand': return require('../../Image/thailand.jpeg');
       case 'philippines': return require('../../Image/philippines.jpeg');
-      default: return require('../../Image/default.jpeg'); // 혹시 null 대비
+      default: return require('../../Image/default.jpeg');
     }
   };
 
@@ -116,13 +130,11 @@ const HomeScreen = ({ navigation }) => {
           <Text style={styles.packText}>Pack</Text>
         </Text>
 
-        <View style={styles.searchContainer}>
-          <TextInput
-            style={styles.searchBox}
-            placeholder="검색어 입력"
-            placeholderTextColor="#999"
-          />
-          <Image source={require('../../Image/search.png')} style={styles.searchIcon} />
+        {/* 회원가입 시 선택한 나라 - 항공사 표시 */}
+        <View style={styles.userInfoBox}>
+        <Text style={styles.userInfoText}>
+   {userData?.travel_destination?.toUpperCase() || '국가'} - {userData?.airline?.toUpperCase() || '항공사'} ✈️
+</Text>
         </View>
 
         <View style={styles.menuContainer}>
@@ -157,37 +169,44 @@ const HomeScreen = ({ navigation }) => {
         </View>
       </View>
 
-      <View style={styles.weatherContainer}>
-        <Text style={styles.weatherTitle}>{city}</Text>
-        {days.length === 0 ? (
-          <ActivityIndicator color="black" style={{ marginLeft: 10 }} size="large" />
-        ) : (
-          <View style={styles.day}>
-            <Fontisto name={icons[days[0].weather[0].main]} size={25} color="black" />
-            <Text style={styles.temp}>{parseFloat(days[0].main.temp).toFixed(1)}°</Text>
-            <Text style={styles.description}>{days[0].weather[0].main}</Text>
-            <Text style={styles.tinyText}>{days[0].weather[0].description}</Text>
-          </View>
-        )}
+      <View style={styles.weatherBox}>
+  <View style={styles.weatherContainer}>
+    <Text style={styles.weatherTitle}>📍 {city}</Text>
+    {days.length === 0 ? (
+      <ActivityIndicator color="black" style={{ marginLeft: 10 }} size="large" />
+    ) : (
+      <View style={styles.day}>
+        <Fontisto name={icons[days[0].weather[0].main]} size={25} color="black" />
+        <Text style={styles.temp}>{parseFloat(days[0].main.temp).toFixed(1)}°</Text>
+        <Text style={styles.description}>{days[0].weather[0].main}</Text>
+        <Text style={styles.tinyText}>{days[0].weather[0].description}</Text>
       </View>
+    )}
+  </View>
+</View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  // (styles는 그대로)
-  container: { flex: 1, padding: 16, backgroundColor: '#f9f9f9' },
+  container: { flex: 1, padding: 16, backgroundColor: '#ffffff' },
   content: { alignItems: 'center', justifyContent: 'center', width: '100%' },
   title: { fontSize: 32, fontWeight: 'bold', marginBottom: 20 },
   easyText: { color: 'skyblue', fontSize: 32, fontWeight: 'bold' },
   packText: { color: 'black', fontSize: 32, fontWeight: 'bold' },
-  searchContainer: {
-    flexDirection: 'row', alignItems: 'center', width: '90%',
-    borderColor: '#ccc', borderWidth: 1, borderRadius: 10,
-    paddingHorizontal: 12, marginBottom: 20,
+
+  userInfoBox: {
+    marginBottom: 20,
+    padding: 10,
+    backgroundColor: '#e6f0ff',
+    borderRadius: 10,
   },
-  searchBox: { flex: 1, height: 40, fontSize: 16 },
-  searchIcon: { width: 20, height: 20 },
+  userInfoText: {
+    fontSize: 18,
+    color: '#333',
+    fontWeight: 'bold',
+  },
+
   menuContainer: {
     flexDirection: 'row', justifyContent: 'space-around',
     width: '100%', marginBottom: 25,
@@ -195,6 +214,7 @@ const styles = StyleSheet.create({
   menuItem: { alignItems: 'center' },
   icon: { width: 50, height: 50, marginBottom: 8 },
   menuText: { fontSize: 16, color: '#333' },
+
   weatherContainer: {
     marginTop: 10, width: '100%', flexDirection: 'row',
     justifyContent: 'center', alignItems: 'center',
@@ -204,6 +224,7 @@ const styles = StyleSheet.create({
   temp: { fontWeight: '600', fontSize: 20, color: 'black', marginLeft: 10 },
   description: { fontSize: 15, color: 'black', fontWeight: '500', marginLeft: 10 },
   tinyText: { fontSize: 10, color: 'black', fontWeight: '500', marginLeft: 5 },
+
   buttonContainer: { alignItems: 'center', width: '100%' },
   button: {
     padding: 15, borderRadius: 12, width: '85%',
@@ -216,8 +237,10 @@ const styles = StyleSheet.create({
   },
   buttonTextGrey: { color: '#555', fontSize: 16, fontWeight: 'bold' },
   buttonImage: { width: 20, height: 20 },
-  topRightImageContainer: { position: 'absolute', top: 10, right: 10 },
-  topRightImage: { width: 40, height: 40 },
+
+  topRightImageContainer: { position: 'absolute', right: 20 },
+  topRightImage: { width: 37, height: 37 },
+
   imageBox: {
     width: '85%', height: 280, borderRadius: 12,
     marginBottom: 20, overflow: 'hidden',
@@ -226,6 +249,7 @@ const styles = StyleSheet.create({
     width: '100%', height: '100%',
     resizeMode: 'cover',
   },
+  
 });
 
 export default HomeScreen;

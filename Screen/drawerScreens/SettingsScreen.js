@@ -225,7 +225,7 @@ const SettingsScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f9f9f9' },
+  container: { flex: 1, backgroundColor: '#ffffff' },
   scrollContainer: { alignItems: 'center', paddingBottom: 24 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: { fontSize: 28, fontWeight: 'bold', marginTop: 10, marginBottom: 20 },

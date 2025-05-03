@@ -33,7 +33,7 @@ const createScreenStack = (name, Component) => {
             : () => <BackBtn onPress={() => navigation.goBack()} />,
           headerShadowVisible: false,
           headerStyle: {
-            backgroundColor: '#f9f9f9',
+            backgroundColor: '#ffffff',
             elevation: 0,
             shadowOpacity: 0,
             borderBottomWidth: 0,

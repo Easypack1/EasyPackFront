@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   buttonTextGrey: { color: '#555', fontSize: 16, fontWeight: 'bold' },
   buttonImage: { width: 20, height: 20 },
 
-  topRightImageContainer: { position: 'absolute', right: 20 },
+  topRightImageContainer: { position: 'absolute', right: 25 },
   topRightImage: { width: 37, height: 37 },
 
   imageBox: {

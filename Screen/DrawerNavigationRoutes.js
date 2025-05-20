@@ -14,6 +14,12 @@ import ReviewScreen from './drawerScreens/ReviewScreen';
 import AirlineInfoScreen from './drawerScreens/AirlineInfoScreen';
 import CustomSidebarMenu from './Components/CustomSidebarMenu';
 import BackBtn from './Components/BackBtn';
+import JapanBoard from './drawerScreens/JapanBoard';
+import USABoard from './drawerScreens/USABoard';
+import VietnamBoard from './drawerScreens/VietnamBoard';
+import PhilippinesBoard from './drawerScreens/PhilippinesBoard';
+import ThailandBoard from './drawerScreens/ThailandBoard';
+
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -148,6 +154,33 @@ const DrawerNavigatorRoutes = () => {
         options={{ drawerLabel: 'Airline' }}
         component={createScreenStack('AirlineInfoScreen', AirlineInfoScreen)}
       />
+      <Drawer.Screen
+  name="JapanBoardStack"
+  options={{ drawerLabel: 'Japan' }}
+  component={createScreenStack('JapanBoard', JapanBoard)}
+/>
+<Drawer.Screen
+  name="USABoardStack"
+  options={{ drawerLabel: 'USA' }}
+  component={createScreenStack('USABoard', USABoard)}
+/>
+<Drawer.Screen
+  name="VietnamBoardStack"
+  options={{ drawerLabel: 'Vietnam' }}
+  component={createScreenStack('VietnamBoard', VietnamBoard)}
+/>
+<Drawer.Screen
+  name="PhilippinesBoardStack"
+  options={{ drawerLabel: 'Philippines' }}
+  component={createScreenStack('PhilippinesBoard', PhilippinesBoard)}
+/>
+<Drawer.Screen
+  name="ThailandBoardStack"
+  options={{ drawerLabel: 'Thailand' }}
+  component={createScreenStack('ThailandBoard', ThailandBoard)}
+/>
+
+
     </Drawer.Navigator>
   );
 };

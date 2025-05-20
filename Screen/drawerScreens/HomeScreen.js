@@ -54,23 +54,23 @@ const HomeScreen = ({ navigation }) => {
     let displayCityName = ''; // 한글로 보여줄 이름
     
     switch (destination) {
-      case 'vietnam':
+      case '베트남':
         cityName = 'Hanoi';
         displayCityName = '하노이';
         break;
-      case 'usa':
+      case '미국':
         cityName = 'New York';
         displayCityName = '뉴욕';
         break;
-      case 'japan':
+      case '일본':
         cityName = 'Tokyo';
         displayCityName = '도쿄';
         break;
-      case 'thailand':
+      case '태국':
         cityName = 'Bangkok';
         displayCityName = '방콕';
         break;
-      case 'philippines':
+      case '필리핀':
         cityName = 'Manila';
         displayCityName = '마닐라';
         break;
@@ -101,11 +101,11 @@ const HomeScreen = ({ navigation }) => {
 
   const getBackgroundImage = () => {
     switch (userData?.travel_destination) {
-      case 'vietnam': return require('../../Image/vietnam.jpeg');
-      case 'usa': return require('../../Image/usa.jpeg');
-      case 'japan': return require('../../Image/japan.jpeg');
-      case 'thailand': return require('../../Image/thailand.jpeg');
-      case 'philippines': return require('../../Image/philippines.jpeg');
+      case '베트남': return require('../../Image/vietnam.jpeg');
+      case '미국': return require('../../Image/usa.jpeg');
+      case '일본': return require('../../Image/japan.jpeg');
+      case '태국': return require('../../Image/thailand.jpeg');
+      case '필리핀': return require('../../Image/philippines.jpeg');
       default: return require('../../Image/default.jpeg');
     }
   };

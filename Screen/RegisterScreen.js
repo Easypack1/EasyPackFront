@@ -191,11 +191,11 @@ const RegisterScreen = ({ navigation }) => {
         <View>
           <Text style={styles.title}>나라와 항공사를 선택해주세요.</Text>
           {renderPicker('여행지', travelDestination, setTravelDestination, [
-            { label: '베트남', value: 'vietnam' },
-            { label: '미국', value: 'usa' },
-            { label: '일본', value: 'japan' },
-            { label: '태국', value: 'thailand' },
-            { label: '필리핀', value: 'philippines' },
+            { label: '베트남', value: '베트남' },
+            { label: '미국', value: '미국' },
+            { label: '일본', value: '일본' },
+            { label: '태국', value: '태국' },
+            { label: '필리핀', value: '필리핀' },
           ])}
 
           {renderPicker('항공사', airline, setAirline, [

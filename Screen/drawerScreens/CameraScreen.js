@@ -5,7 +5,6 @@ import {
 } from 'react-native';
 import { Camera, CameraView } from 'expo-camera';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as FileSystem from 'expo-file-system';
 
 export default function CameraScreen({ navigation }) {
   const [hasPermission, setHasPermission] = useState(null);
@@ -24,54 +23,77 @@ export default function CameraScreen({ navigation }) {
     })();
   }, []);
 
-const sendToServer = async (photoUri) => {
-  const destination = await AsyncStorage.getItem('travelDestination');
-  const airline = await AsyncStorage.getItem('airline');
+  const sendToServer = async (photoUri) => {
+    const destination = await AsyncStorage.getItem('travelDestination');
+    const airline = await AsyncStorage.getItem('airline');
 
-  console.log('📤 AsyncStorage에서 로딩된 값 →', {
-    travelDestination: destination,
-    airline,
-  });
-
-  const formData = new FormData();
-  formData.append('file', {
-    uri: photoUri,
-    name: 'photo.jpg',
-    type: 'image/jpeg',
-  });
-  formData.append('country', destination || 'unknown');
-  formData.append('airline', airline || 'unknown');
-
-  try {
-    setIsDetecting(true);
-    setDetectionFailed(false);
-
-    const response = await fetch('http://13.236.230.193:8000/predict', {
-      method: 'POST',
-      body: formData,
+    console.log('📤 AsyncStorage에서 로딩된 값 →', {
+      travelDestination: destination,
+      airline,
     });
 
-    const result = await response.json();
-    console.log('🧠 YOLO 감지 결과 JSON:', result);
+    // 1차: YOLO 감지 요청
+    const formData = new FormData();
+    formData.append('file', {
+      uri: photoUri,
+      name: 'photo.jpg',
+      type: 'image/jpeg',
+    });
+    formData.append('country', destination || 'unknown');
+    formData.append('airline', airline || 'unknown');
+    formData.append('item_name', ''); // 감지 전이므로 비워둠
 
-    if (result.detections?.length > 0) {
-      const detected = result.detections[0];
-      navigation.navigate('DetectedInfoScreen', {
-        label: detected.label,
-        description: detected.description || '안내 정보가 없습니다.',
-        imageUri: photoUri,
+    try {
+      setIsDetecting(true);
+      setDetectionFailed(false);
+
+      const response = await fetch('http://13.236.230.193:8000/predict', {
+        method: 'POST',
+        body: formData,
       });
-    } else {
-      setDetectionFailed(true);
-    }
-  } catch (err) {
-    console.error('❌ 서버 요청 오류:', err);
-    Alert.alert('서버 오류', '감지 정보를 가져오는 데 실패했습니다.');
-  } finally {
-    setIsDetecting(false);
-  }
-};
 
+      const result = await response.json();
+      console.log('🧠 YOLO 감지 결과 JSON:', result);
+
+      if (result.detections?.length > 0) {
+        const detected = result.detections[0];
+        const label = detected.label;
+
+        // 2차: label을 item_name으로 다시 규정 요청
+        const payload = {
+          travel_destination: destination || 'unknown',
+          airline: airline || 'unknown',
+          item_name: label,
+        };
+
+        console.log('📤 감지된 label로 재요청:', payload);
+
+        const infoRes = await fetch('http://13.236.230.193:8000/predict', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const infoResult = await infoRes.json();
+        console.log('📩 최종 규정 결과:', infoResult);
+
+        navigation.navigate('DetectedInfoScreen', {
+          label: label,
+          description: infoResult.description || infoResult.guidance || '안내 정보가 없습니다.',
+          imageUri: photoUri,
+        });
+      } else {
+        setDetectionFailed(true);
+      }
+    } catch (err) {
+      console.error('❌ 서버 요청 오류:', err);
+      Alert.alert('서버 오류', '감지 정보를 가져오는 데 실패했습니다.');
+    } finally {
+      setIsDetecting(false);
+    }
+  };
 
   const handleCapture = async () => {
     if (!cameraRef.current) {
@@ -101,18 +123,20 @@ const sendToServer = async (photoUri) => {
       const destination = await AsyncStorage.getItem('travelDestination');
       const airline = await AsyncStorage.getItem('airline');
 
+      const payload = {
+        travel_destination: destination || 'unknown',
+        airline: airline || 'unknown',
+        item_name: manualLabel.trim(),
+      };
+
+      console.log('📤 수동입력 전송 데이터:', payload);
+
       const response = await fetch('http://13.236.230.193:8000/predict', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          travel_destination: destination || 'unknown',
-          airline: airline || 'unknown',
-          label: manualLabel.trim(),
-          image: null,
-          detectedAt: new Date().toISOString(),
-        }),
+        body: JSON.stringify(payload),
       });
 
       const result = await response.json();

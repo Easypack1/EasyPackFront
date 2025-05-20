@@ -201,11 +201,11 @@ const SettingsScreen = ({ navigation }) => {
         </View>
 
         {renderPicker('travel_destination', '여행 국가', userInfo.travel_destination, [
-          { label: '베트남', value: 'vietnam' },
-          { label: '미국', value: 'usa' },
-          { label: '일본', value: 'japan' },
-          { label: '태국', value: 'thailand' },
-          { label: '필리핀', value: 'philippines' },
+          { label: '베트남', value: '베트남' },
+          { label: '미국', value: '미국' },
+          { label: '일본', value: '일본' },
+          { label: '태국', value: '태국' },
+          { label: '필리핀', value: '필리핀' },
         ])}
 
         {renderPicker('airline', '항공사', userInfo.airline, [

@@ -14,81 +14,65 @@ export default function CameraScreen({ navigation }) {
   const [manualLabel, setManualLabel] = useState('');
   const cameraRef = useRef(null);
 
+  const API_URL = 'http://13.236.230.193:8000/predict';
+
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
-      console.log('📷 카메라 권한 상태:', status);
       setHasPermission(status === 'granted');
       setCameraType(Camera?.Constants?.Type?.back ?? 0);
     })();
   }, []);
 
-  const sendToServer = async (photoUri) => {
-    const destination = await AsyncStorage.getItem('travelDestination');
+  const getUserInfo = async () => {
+    const travelDestination = await AsyncStorage.getItem('travelDestination');
     const airline = await AsyncStorage.getItem('airline');
+    return { travelDestination: travelDestination || 'unknown', airline: airline || 'unknown' };
+  };
 
-    console.log('📤 AsyncStorage에서 로딩된 값 →', {
-      travelDestination: destination,
+  const handleImageDetection = async (photoUri) => {
+    const { travelDestination, airline } = await getUserInfo();
+
+    console.log('📤 서버 전송값 (자동 감지):', {
+      country: travelDestination,
       airline,
+      item_name: '',
     });
 
-    // 1차: YOLO 감지 요청
     const formData = new FormData();
-    formData.append('file', {
-      uri: photoUri,
-      name: 'photo.jpg',
-      type: 'image/jpeg',
-    });
-    formData.append('country', destination || 'unknown');
-    formData.append('airline', airline || 'unknown');
-    formData.append('item_name', ''); // 감지 전이므로 비워둠
+    formData.append('file', { uri: photoUri, name: 'photo.jpg', type: 'image/jpeg' });
+    formData.append('country', travelDestination);
+    formData.append('airline', airline);
+    formData.append('item_name', '');
+
+    setIsDetecting(true);
+    setDetectionFailed(false);
 
     try {
-      setIsDetecting(true);
-      setDetectionFailed(false);
-
-      const response = await fetch('http://13.236.230.193:8000/predict', {
+      const response = await fetch(API_URL, {
         method: 'POST',
         body: formData,
       });
 
       const result = await response.json();
-      console.log('🧠 YOLO 감지 결과 JSON:', result);
+      console.log('🧠 YOLO 감지 결과:', result);
 
       if (result.detections?.length > 0) {
-        const detected = result.detections[0];
-        const label = detected.label;
-
-        // 2차: label을 item_name으로 다시 규정 요청
-        const payload = {
-          travel_destination: destination || 'unknown',
-          airline: airline || 'unknown',
-          item_name: label,
-        };
-
-        console.log('📤 감지된 label로 재요청:', payload);
-
-        const infoRes = await fetch('http://13.236.230.193:8000/predict', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-        });
-
-        const infoResult = await infoRes.json();
-        console.log('📩 최종 규정 결과:', infoResult);
+        const topResult = result.detections[0];
+        console.log('📌 감지된 label:', topResult.label);
+        console.log('📌 감지된 category:', topResult.category);
+        console.log('📌 감지된 description:', topResult.description);
 
         navigation.navigate('DetectedInfoScreen', {
-          label: label,
-          description: infoResult.description || infoResult.guidance || '안내 정보가 없습니다.',
+          label: topResult.label,
+          description: topResult.description || '안내 정보가 없습니다.',
           imageUri: photoUri,
         });
       } else {
         setDetectionFailed(true);
       }
     } catch (err) {
-      console.error('❌ 서버 요청 오류:', err);
+      console.error('❌ YOLO 요청 오류:', err);
       Alert.alert('서버 오류', '감지 정보를 가져오는 데 실패했습니다.');
     } finally {
       setIsDetecting(false);
@@ -97,65 +81,68 @@ export default function CameraScreen({ navigation }) {
 
   const handleCapture = async () => {
     if (!cameraRef.current) {
-      Alert.alert('카메라 준비 중');
-      return;
+      return Alert.alert('카메라 준비 중입니다.');
     }
 
     try {
       const photo = await cameraRef.current.takePictureAsync();
       console.log('📸 촬영된 사진:', photo);
-      if (photo?.uri) await sendToServer(photo.uri);
+      if (photo?.uri) await handleImageDetection(photo.uri);
     } catch (error) {
-      console.error('📷 촬영 오류:', error);
-      Alert.alert('촬영 중 오류 발생');
+      Alert.alert('촬영 오류', '사진을 찍는 중 문제가 발생했습니다.');
     }
   };
 
-  const handleManualSubmit = async () => {
-    if (!manualLabel.trim()) {
-      Alert.alert('입력 오류', '물품 이름을 입력해주세요.');
-      return;
-    }
+const handleManualSubmit = async () => {
+  if (!manualLabel.trim()) {
+    return Alert.alert('입력 오류', '물품 이름을 입력해주세요.');
+  }
 
-    try {
-      setIsDetecting(true);
+  const { travelDestination, airline } = await getUserInfo();
 
-      const destination = await AsyncStorage.getItem('travelDestination');
-      const airline = await AsyncStorage.getItem('airline');
+  console.log('📤 서버 전송값 (수동 입력):', {
+    country: travelDestination,
+    airline,
+    item_name: manualLabel.trim(),
+  });
 
-      const payload = {
-        travel_destination: destination || 'unknown',
-        airline: airline || 'unknown',
-        item_name: manualLabel.trim(),
-      };
+  const formData = new FormData();
+  formData.append('country', travelDestination);
+  formData.append('airline', airline);
+  formData.append('item_name', manualLabel.trim());
 
-      console.log('📤 수동입력 전송 데이터:', payload);
+  setIsDetecting(true);
 
-      const response = await fetch('http://13.236.230.193:8000/predict', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      body: formData,
+    });
 
-      const result = await response.json();
-      console.log('🧠 수동 입력 결과:', result);
+    const result = await response.json();
+    console.log('🧠 수동입력 결과:', result);
 
+    if (result.detections?.length > 0) {
+      const topResult = result.detections[0];
+
+      // ✅ label은 직접 입력한 item_name 값으로 지정
       navigation.navigate('DetectedInfoScreen', {
         label: manualLabel.trim(),
-        description: result.description || result.guidance || '안내 정보가 없습니다.',
+        description: topResult.description || '안내 정보가 없습니다.',
         imageUri: null,
       });
-    } catch (err) {
-      console.error('❌ 수동 입력 서버 오류:', err);
-      Alert.alert('서버 오류', '정보를 불러올 수 없습니다.');
-    } finally {
-      setIsDetecting(false);
-      setDetectionFailed(false);
-      setManualLabel('');
+    } else {
+      Alert.alert('결과 없음', '해당 물품에 대한 규정을 찾을 수 없습니다.');
     }
-  };
+  } catch (err) {
+    Alert.alert('서버 오류', '정보를 불러올 수 없습니다.');
+  } finally {
+    setIsDetecting(false);
+    setDetectionFailed(false);
+    setManualLabel('');
+  }
+};
+
 
   if (hasPermission === null || cameraType === null) {
     return (
@@ -183,7 +170,7 @@ export default function CameraScreen({ navigation }) {
         ratio="16:9"
       />
 
-      {!detectionFailed && (
+      {!detectionFailed ? (
         <View style={styles.controls}>
           <TouchableOpacity
             style={styles.captureButton}
@@ -195,12 +182,9 @@ export default function CameraScreen({ navigation }) {
             </Text>
           </TouchableOpacity>
         </View>
-      )}
-
-      {detectionFailed && (
+      ) : (
         <View style={styles.manualInputArea}>
           <Text style={styles.manualPrompt}>감지 실패: 직접 입력해주세요</Text>
-
           <TextInput
             style={styles.textInput}
             placeholder="예: 칫솔, 노트북"
@@ -208,11 +192,9 @@ export default function CameraScreen({ navigation }) {
             value={manualLabel}
             onChangeText={setManualLabel}
           />
-
           <TouchableOpacity style={styles.submitButton} onPress={handleManualSubmit}>
             <Text style={styles.submitButtonText}>제출하기</Text>
           </TouchableOpacity>
-
           <TouchableOpacity
             style={styles.retryButton}
             onPress={() => {

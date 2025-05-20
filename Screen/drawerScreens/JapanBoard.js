@@ -1,94 +1,44 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  FlatList,
-  StyleSheet,
-} from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { View, Text, FlatList, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';  // 추가
 
 const JapanBoard = () => {
-  const navigation = useNavigation();
-  const [posts, setPosts] = useState([]);
+  const [reviews, setReviews] = useState([]);
 
   useFocusEffect(
     React.useCallback(() => {
-      const loadPosts = async () => {
-        try {
-          const storedPosts = await AsyncStorage.getItem('posts');
-          if (storedPosts) {
-            const allPosts = JSON.parse(storedPosts);
-            const japanPosts = allPosts.filter(post => post.country === '일본');
-            japanPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
-            setPosts(japanPosts);
-          } else {
-            setPosts([]);
-          }
-        } catch (e) {
-          console.error('Failed to load posts', e);
+      const loadJapanReviews = async () => {
+        const storedReviews = await AsyncStorage.getItem('reviews');
+        if (storedReviews) {
+          const parsedReviews = JSON.parse(storedReviews);
+          const japanReviews = parsedReviews.filter((r) => r.country === '일본');
+          setReviews(japanReviews);
+        } else {
+          setReviews([]); // 저장된 리뷰가 없으면 빈 배열로 초기화
         }
       };
-      loadPosts();
-    }, [])
-  );
 
-  const handlePostPress = (post) => {
-    navigation.navigate('PostDetailScreen', { post });
-  };
-
-  const handleWritePress = () => {
-    navigation.navigate('ReviewScreenStack');
-  };
-
-  const handleBackPress = () => {
-    navigation.navigate('CommunityScreenStack');
-  };
-
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.postItem}
-      onPress={() => handlePostPress(item)}
-    >
-      <Text style={styles.arrowIcon}>←</Text>
-      <View style={styles.postTextContainer}>
-        <Text style={styles.postTitle} numberOfLines={1}>
-          {item.title}
-        </Text>
-        <Text style={styles.postPreview} numberOfLines={1}>
-          {item.content}
-        </Text>
-      </View>
-      <Text style={styles.postDate}>
-        {new Date(item.date).toLocaleDateString()}
-      </Text>
-    </TouchableOpacity>
+      loadJapanReviews();
+    }, []) // 빈 배열이라도 괜찮아요, 화면 포커스될 때마다 실행됨
   );
 
   return (
     <View style={styles.container}>
-      {/* 상단 바 */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
-          <Text style={styles.backButtonText}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>일본 게시판</Text>
-        <TouchableOpacity style={styles.writeButton} onPress={handleWritePress}>
-          <Text style={styles.writeButtonText}>✏️ 글쓰기</Text>
-        </TouchableOpacity>
-      </View>
-
-      {posts.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>아직 게시글이 없습니다.</Text>
-        </View>
+      <Text style={styles.title}>일본 게시판</Text>
+      {reviews.length === 0 ? (
+        <Text style={styles.noPosts}>게시글이 없습니다.</Text>
       ) : (
         <FlatList
-          data={posts}
+          data={reviews}
           keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          renderItem={({ item }) => (
+            <View style={styles.postItem}>
+              <Text style={styles.reviewText}>⭐ {item.rating}점</Text>
+              <Text style={styles.reviewText}>{item.review}</Text>
+              <Text style={styles.dateText}>{new Date(item.date).toLocaleString()}</Text>
+            </View>
+          )}
         />
       )}
     </View>
@@ -96,46 +46,12 @@ const JapanBoard = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    alignItems: 'center',
-  },
-  backButton: {
-    padding: 5,
-    marginRight: 10,
-  },
-  backButtonText: {
-    fontSize: 20,
-  },
-  headerTitle: { flex: 1, fontSize: 20, fontWeight: 'bold', textAlign: 'center' },
-  writeButton: { padding: 8, backgroundColor: '#007AFF', borderRadius: 5 },
-  writeButtonText: { color: '#fff', fontWeight: 'bold' },
-  postItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  arrowIcon: {
-    fontSize: 18,
-    marginRight: 10,
-    color: '#333',
-  },
-  postTextContainer: {
-    flex: 1,
-  },
-  postTitle: { fontSize: 16, fontWeight: 'bold' },
-  postPreview: { fontSize: 14, color: '#666', marginTop: 4 },
-  postDate: { fontSize: 12, color: '#999', marginLeft: 10 },
-  emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  emptyText: { fontSize: 16, color: '#666' },
+  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 15 },
+  noPosts: { fontSize: 16, color: '#999', marginTop: 50, textAlign: 'center' },
+  postItem: { marginBottom: 15, borderBottomWidth: 1, borderBottomColor: '#ccc', paddingBottom: 10 },
+  reviewText: { fontSize: 16 },
+  dateText: { fontSize: 12, color: '#666', marginTop: 5 },
 });
 
 export default JapanBoard;

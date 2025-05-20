@@ -63,17 +63,14 @@ const CommunityScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* 헤더 */}
       <View style={styles.header}>
         <Text style={styles.title}>커뮤니티</Text>
       </View>
 
-      {/* 여행기 소제목 */}
       <View style={styles.subTitleContainer}>
         <Text style={styles.subTitle}>여행기</Text>
       </View>
 
-      {/* 게시판 리스트 */}
       <FlatList
         data={countryList}
         keyExtractor={(item) => item}
@@ -102,30 +99,16 @@ const CommunityScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    paddingTop: 10,
-  },
+  container: { flex: 1, backgroundColor: '#fff', paddingTop: 10 },
   header: {
     justifyContent: 'center',
     alignItems: 'center',
     paddingBottom: 20,
     marginTop: -5,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  subTitleContainer: {
-    marginLeft: 50,
-    marginBottom: 10,
-  },
-  subTitle: {
-    fontSize: 23,
-    fontWeight: 'bold',
-    color: '#333',
-  },
+  title: { fontSize: 24, fontWeight: 'bold' },
+  subTitleContainer: { marginLeft: 50, marginBottom: 10 },
+  subTitle: { fontSize: 23, fontWeight: 'bold', color: '#333' },
   boardListContainer: {
     backgroundColor: '#f5f5f5',
     borderRadius: 10,
@@ -140,19 +123,14 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
   },
-  boardTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+  boardTitle: { fontSize: 16, fontWeight: 'bold' },
   previewText: {
     fontSize: 14,
     color: '#666',
     textAlign: 'right',
     maxWidth: '60%',
   },
-  separator: {
-    height: 5,
-  },
+  separator: { height: 5 },
 });
 
 export default CommunityScreen;

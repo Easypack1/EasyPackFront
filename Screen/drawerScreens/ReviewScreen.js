@@ -37,6 +37,7 @@ const ReviewScreen = () => {
       country: selectedCountry,
       rating,
       review,
+      date: new Date().toISOString(),
     };
 
     try {
@@ -44,7 +45,8 @@ const ReviewScreen = () => {
       const parsedReviews = storedReviews ? JSON.parse(storedReviews) : [];
       const updatedReviews = [...parsedReviews, newReview];
       await AsyncStorage.setItem('reviews', JSON.stringify(updatedReviews));
-      navigation.navigate('CommunityScreenStack', { screen: 'CommunityScreen' });
+      alert('리뷰가 저장되었습니다!');
+      navigation.navigate('CommunityScreen');
     } catch (error) {
       console.error('리뷰 저장 중 오류 발생:', error);
     }
@@ -57,15 +59,13 @@ const ReviewScreen = () => {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
-          {/* 헤더 */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.navigate('CommunityScreenStack')}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
               <Ionicons name="arrow-back" size={24} color="black" />
             </TouchableOpacity>
             <Text style={styles.headerText}>여행기를 작성해주세요</Text>
           </View>
 
-          {/* 나라 선택 */}
           <View style={styles.countryListContainer}>
             {countryList.map((item) => (
               <TouchableOpacity
@@ -88,7 +88,6 @@ const ReviewScreen = () => {
             ))}
           </View>
 
-          {/* 별점 선택 */}
           <View style={styles.starContainer}>
             {[1, 2, 3, 4, 5].map((star) => (
               <TouchableOpacity key={star} onPress={() => setRating(star)}>
@@ -101,7 +100,6 @@ const ReviewScreen = () => {
             ))}
           </View>
 
-          {/* 리뷰 입력 박스 */}
           <TextInput
             style={styles.inputBox}
             multiline
@@ -111,7 +109,6 @@ const ReviewScreen = () => {
             onChangeText={setReview}
           />
 
-          {/* 제출 버튼 */}
           <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
             <Text style={styles.submitButtonText}>제출</Text>
           </TouchableOpacity>
@@ -122,22 +119,9 @@ const ReviewScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  headerText: {
-    marginTop: 10,
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginLeft: 10,
-  },
+  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  headerText: { marginLeft: 10, fontSize: 20, fontWeight: 'bold' },
   countryListContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -153,17 +137,9 @@ const styles = StyleSheet.create({
     marginVertical: 4,
     marginTop: 20,
   },
-  activeCountry: {
-    backgroundColor: '#007AFF',
-  },
-  countryText: {
-    fontSize: 13,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  activeCountryText: {
-    color: '#fff',
-  },
+  activeCountry: { backgroundColor: '#007AFF' },
+  countryText: { fontSize: 13, fontWeight: 'bold', color: '#333' },
+  activeCountryText: { color: '#fff' },
   starContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -188,11 +164,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
     width: '100%',
   },
-  submitButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+  submitButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
 });
 
 export default ReviewScreen;

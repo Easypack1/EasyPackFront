@@ -4,9 +4,9 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  FlatList,
+  ScrollView,
 } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect, CurrentRenderContext } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const countryList = ['일본', '미국', '베트남', '필리핀', '태국'];
@@ -51,25 +51,14 @@ const CommunityScreen = () => {
   );
 
   const handleBoardPress = (country) => {
-    switch (country) {
-      case '일본':
-        navigation.navigate('JapanBoardStack');
-        break;
-      case '미국':
-        navigation.navigate('USABoardStack');
-        break;
-      case '베트남':
-        navigation.navigate('VietnamBoardStack');
-        break;
-      case '필리핀':
-        navigation.navigate('PhilippinesBoardStack');
-        break;
-      case '태국':
-        navigation.navigate('ThailandBoardStack');
-        break;
-      default:
-        break;
-    }
+    const routes = {
+      일본: 'JapanBoardStack',
+      미국: 'USABoardStack',
+      베트남: 'VietnamBoardStack',
+      필리핀: 'PhilippinesBoardStack',
+      태국: 'ThailandBoardStack',
+    };
+    navigation.navigate(routes[country]);
   };
 
   const handlePostPress = (post) => {
@@ -77,40 +66,36 @@ const CommunityScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>커뮤니티</Text>
       </View>
 
       <View style={styles.subTitleContainer}>
-        <Text style={styles.subTitle}>여행기</Text>
+        <Text style={styles.subTitle}>🎒여행기</Text>
       </View>
 
-      <FlatList
-        data={countryList}
-        keyExtractor={(item) => item}
-        contentContainerStyle={styles.boardListContainer}
-        renderItem={({ item }) => (
+      <View style={styles.boardListContainer}>
+        {countryList.map((country) => (
           <TouchableOpacity
-            onPress={() => handleBoardPress(item)}
+            key={country}
+            onPress={() => handleBoardPress(country)}
             style={styles.boardItem}
           >
-            <Text style={styles.boardTitle}>{item} 게시판</Text>
+            <Text style={styles.boardTitle}>{country} 게시판</Text>
             <Text
               style={styles.previewText}
               numberOfLines={1}
               ellipsizeMode="tail"
             >
-              {latestPosts[item]?.review
-                ? `- ${latestPosts[item].review}`
+              {latestPosts[country]?.review
+                ? `- ${latestPosts[country].review}`
                 : '게시글이 없습니다.'}
             </Text>
           </TouchableOpacity>
-        )}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-      />
+        ))}
+      </View>
 
-      {/* 실시간 인기글 섹션 */}
       <View style={styles.popularSection}>
         <Text style={styles.popularTitle}>🔥 실시간 인기글</Text>
         {popularPosts.length === 0 ? (
@@ -133,7 +118,7 @@ const CommunityScreen = () => {
           ))
         )}
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -146,7 +131,7 @@ const styles = StyleSheet.create({
     marginTop: -5,
   },
   title: { fontSize: 24, fontWeight: 'bold' },
-  subTitleContainer: { marginLeft: 50, marginBottom: 10 },
+  subTitleContainer: { marginLeft: 30, marginBottom: 10 },
   subTitle: { fontSize: 23, fontWeight: 'bold', color: '#333' },
   boardListContainer: {
     backgroundColor: '#f5f5f5',
@@ -154,7 +139,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 15,
     paddingVertical: 15,
     paddingHorizontal: 10,
-    marginBottom: 10, // 간격 줄임
+    marginBottom: 10,
   },
   boardItem: {
     flexDirection: 'row',
@@ -170,7 +155,6 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     maxWidth: '60%',
   },
-  separator: { height: 5 },
   popularSection: {
     marginHorizontal: 15,
     marginTop: 5,
@@ -178,6 +162,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     backgroundColor: '#fff6f0',
     borderRadius: 10,
+    marginBottom: 30,
+    height : 200,
   },
   popularTitle: {
     fontSize: 20,
@@ -188,6 +174,7 @@ const styles = StyleSheet.create({
   noPopularText: {
     fontSize: 14,
     color: '#999',
+    
   },
   popularItem: {
     marginBottom: 8,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View, Text, TouchableOpacity, FlatList, StyleSheet, Image, TextInput, Alert
 } from 'react-native';
@@ -11,10 +11,12 @@ const JapanBoard = () => {
   const navigation = useNavigation();
   const [posts, setPosts] = useState([]);
 
-  // 댓글 상태 따로 저장 (postId: 댓글 배열)
   const [comments, setComments] = useState({});
-  // 입력 중인 댓글 텍스트(postId별)
   const [commentInput, setCommentInput] = useState({});
+
+  const [editingPostId, setEditingPostId] = useState(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editReview, setEditReview] = useState('');
 
   useFocusEffect(
     React.useCallback(() => {
@@ -25,14 +27,12 @@ const JapanBoard = () => {
             const allReviews = JSON.parse(storedReviews);
             const japanPosts = allReviews.filter(post => post.country === '일본');
             japanPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
-            // 좋아요 초기값 없으면 false로 초기화, 댓글도 초기화
             const postsWithExtras = japanPosts.map(p => ({
               ...p,
               liked: p.liked || false,
               comments: p.comments || [],
             }));
             setPosts(postsWithExtras);
-            // 댓글 상태 초기화
             const initComments = {};
             postsWithExtras.forEach(p => {
               initComments[p.id] = p.comments;
@@ -50,7 +50,6 @@ const JapanBoard = () => {
     }, [])
   );
 
-  // 좋아요 토글
   const toggleLike = async (postId) => {
     const updatedPosts = posts.map(post => {
       if (post.id === postId) {
@@ -59,16 +58,13 @@ const JapanBoard = () => {
       return post;
     });
     setPosts(updatedPosts);
-    // AsyncStorage 업데이트
     await AsyncStorage.setItem('reviews', JSON.stringify(updatedPosts));
   };
 
-  // 댓글 입력 텍스트 변경
   const handleCommentChange = (postId, text) => {
     setCommentInput({ ...commentInput, [postId]: text });
   };
 
-  // 댓글 추가
   const addComment = async (postId) => {
     const text = commentInput[postId];
     if (!text || text.trim() === '') return;
@@ -76,7 +72,7 @@ const JapanBoard = () => {
       id: Date.now().toString(),
       text: text.trim(),
       date: new Date().toISOString(),
-      nickname: '닉네임', // 필요하면 실제 닉네임으로 대체
+      nickname: '닉네임',
       profileImg: DEFAULT_PROFILE_IMG,
     };
 
@@ -89,7 +85,6 @@ const JapanBoard = () => {
     });
     setPosts(updatedPosts);
 
-    // 댓글 상태 업데이트
     setComments(prev => ({
       ...prev,
       [postId]: [...(comments[postId] || []), newComment]
@@ -100,7 +95,6 @@ const JapanBoard = () => {
     await AsyncStorage.setItem('reviews', JSON.stringify(updatedPosts));
   };
 
-  // 게시글 삭제
   const deletePost = (id) => {
     Alert.alert(
       '삭제 확인',
@@ -128,6 +122,36 @@ const JapanBoard = () => {
     );
   };
 
+  const startEditing = (post) => {
+    setEditingPostId(post.id);
+    setEditTitle(post.title);
+    setEditReview(post.review);
+  };
+
+  const saveEdit = async () => {
+    if (editTitle.trim() === '' || editReview.trim() === '') {
+      Alert.alert('오류', '제목과 내용을 모두 입력해주세요.');
+      return;
+    }
+    const updatedPosts = posts.map(post => {
+      if (post.id === editingPostId) {
+        return { ...post, title: editTitle, review: editReview };
+      }
+      return post;
+    });
+    setPosts(updatedPosts);
+    setEditingPostId(null);
+    setEditTitle('');
+    setEditReview('');
+    await AsyncStorage.setItem('reviews', JSON.stringify(updatedPosts));
+  };
+
+  const cancelEdit = () => {
+    setEditingPostId(null);
+    setEditTitle('');
+    setEditReview('');
+  };
+
   const handleWritePress = () => {
     navigation.navigate('ReviewScreenStack');
   };
@@ -136,7 +160,6 @@ const JapanBoard = () => {
     navigation.navigate('CommunityScreenStack');
   };
 
-  // 게시글 아이템 렌더링
   const renderItem = ({ item }) => (
     <View style={styles.postItem}>
       <View style={styles.profileContainer}>
@@ -146,16 +169,56 @@ const JapanBoard = () => {
           <Text style={styles.postRating}>⭐️ {item.rating}점</Text>
         </View>
 
-        <TouchableOpacity
-          style={styles.deletePostButton}
-          onPress={() => deletePost(item.id)}
-        >
-          <Text style={styles.deletePostText}>삭제</Text>
-        </TouchableOpacity>
-      </View>
-      <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 4 }}>{item.title}</Text>
+        {/* 삭제 버튼과 수정 버튼을 한 줄로 */}
+        <View style={styles.actionButtonsContainer}>
+          <TouchableOpacity
+            style={styles.deletePostButton}
+            onPress={() => deletePost(item.id)}
+          >
+            <Text style={styles.deletePostText}>삭제</Text>
+          </TouchableOpacity>
 
-      <Text style={styles.postReview}>{item.review}</Text>
+          {editingPostId !== item.id && (
+            <TouchableOpacity
+              style={styles.editButtonInline}
+              onPress={() => startEditing(item)}
+            >
+              <Text style={styles.editButtonText}>수정</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+
+      {editingPostId === item.id ? (
+        <>
+          <TextInput
+            style={styles.editTitleInput}
+            value={editTitle}
+            onChangeText={setEditTitle}
+            placeholder="제목을 입력하세요"
+          />
+          <TextInput
+            style={styles.editReviewInput}
+            value={editReview}
+            onChangeText={setEditReview}
+            placeholder="내용을 입력하세요"
+            multiline
+          />
+          <View style={styles.editButtonsRow}>
+            <TouchableOpacity style={styles.saveButton} onPress={saveEdit}>
+              <Text style={styles.saveButtonText}>저장</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.cancelButton} onPress={cancelEdit}>
+              <Text style={styles.cancelButtonText}>취소</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      ) : (
+        <>
+          <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 4 }}>{item.title}</Text>
+          <Text style={styles.postReview}>{item.review}</Text>
+        </>
+      )}
 
       <View style={styles.actionsRow}>
         <TouchableOpacity
@@ -167,7 +230,6 @@ const JapanBoard = () => {
         <Text style={styles.likeCount}>{item.liked ? 1 : 0}</Text>
       </View>
 
-      {/* 댓글 리스트 */}
       <View style={styles.commentList}>
         {(comments[item.id] || []).map(comment => (
           <View key={comment.id} style={styles.commentItem}>
@@ -180,7 +242,6 @@ const JapanBoard = () => {
         ))}
       </View>
 
-      {/* 댓글 입력창 */}
       <View style={styles.commentInputRow}>
         <TextInput
           style={styles.commentInput}
@@ -258,6 +319,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 8,
+    justifyContent: 'space-between',
   },
   profileImage: {
     width: 36,
@@ -277,101 +339,142 @@ const styles = StyleSheet.create({
   },
   postRating: {
     fontSize: 14,
-    color: '#666',
+    color: '#777',
+  },
+
+  actionButtonsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   deletePostButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    backgroundColor: '#ff3b30',
+    padding: 6,
+    backgroundColor: '#FF3B30',
     borderRadius: 5,
-  },
-  deletePostText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
+marginRight: 6,
+},
+deletePostText: { color: '#fff' },
+editButtonInline: {
+padding: 6,
+backgroundColor: '#007AFF',
+borderRadius: 5,
+},
+editButtonText: { color: '#fff' },
 
-  postReview: {
-    fontSize: 15,
-    color: '#333',
-    marginBottom: 8,
-  },
+editTitleInput: {
+borderWidth: 1,
+borderColor: '#ccc',
+padding: 6,
+borderRadius: 5,
+marginBottom: 6,
+},
+editReviewInput: {
+borderWidth: 1,
+borderColor: '#ccc',
+padding: 6,
+borderRadius: 5,
+height: 60,
+marginBottom: 6,
+textAlignVertical: 'top',
+},
+editButtonsRow: {
+flexDirection: 'row',
+justifyContent: 'flex-end',
+gap: 10,
+marginBottom: 6,
+},
+saveButton: {
+backgroundColor: '#007AFF',
+paddingHorizontal: 10,
+paddingVertical: 6,
+borderRadius: 5,
+},
+saveButtonText: { color: '#fff' },
+cancelButton: {
+backgroundColor: '#ccc',
+paddingHorizontal: 10,
+paddingVertical: 6,
+borderRadius: 5,
+},
+cancelButtonText: { color: '#000' },
 
-  actionsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  likeButton: {
-    marginRight: 6,
-  },
-  likeCount: {
-    fontSize: 14,
-    color: '#666',
-  },
-
-  commentList: {
-    marginBottom: 8,
-  },
-  commentItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 4,
-  },
-  commentProfileImage: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    marginRight: 6,
-  },
-  commentNickname: {
-    fontWeight: 'bold',
-    fontSize: 13,
-  },
-  commentText: {
-    fontSize: 14,
-    color: '#444',
-  },
-
-  commentInputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-    paddingTop: 4,
-    marginBottom: 4,
-  },
-  commentInput: {
-    flex: 1,
-    height: 36,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 18,
-    paddingHorizontal: 12,
-    fontSize: 14,
-  },
-  commentSubmitButton: {
-    marginLeft: 8,
-    backgroundColor: '#007AFF',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 18,
-  },
-  commentSubmitText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-
-  postFooter: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
-  postDate: {
-    fontSize: 12,
-    color: '#999',
-  },
-
-  emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  emptyText: { fontSize: 16, color: '#666' },
+postReview: {
+fontSize: 15,
+marginBottom: 6,
+},
+actionsRow: {
+flexDirection: 'row',
+alignItems: 'center',
+marginBottom: 6,
+},
+likeButton: {
+padding: 5,
+marginRight: 6,
+},
+likeCount: {
+fontSize: 14,
+},
+commentList: {
+marginTop: 6,
+marginBottom: 6,
+},
+commentItem: {
+flexDirection: 'row',
+marginBottom: 4,
+alignItems: 'flex-start',
+},
+commentProfileImage: {
+width: 24,
+height: 24,
+borderRadius: 12,
+marginRight: 6,
+},
+commentNickname: {
+fontWeight: 'bold',
+fontSize: 13,
+},
+commentText: {
+fontSize: 13,
+},
+commentInputRow: {
+flexDirection: 'row',
+alignItems: 'center',
+marginTop: 6,
+},
+commentInput: {
+flex: 1,
+borderWidth: 1,
+borderColor: '#ccc',
+borderRadius: 5,
+padding: 6,
+marginRight: 6,
+},
+commentSubmitButton: {
+paddingVertical: 6,
+paddingHorizontal: 10,
+backgroundColor: '#007AFF',
+borderRadius: 5,
+},
+commentSubmitText: {
+color: '#fff',
+},
+postFooter: {
+marginTop: 6,
+alignItems: 'flex-end',
+},
+postDate: {
+fontSize: 12,
+color: '#777',
+},
+emptyContainer: {
+flex: 1,
+justifyContent: 'center',
+alignItems: 'center',
+},
+emptyText: {
+fontSize: 16,
+color: '#777',
+},
 });
 
 export default JapanBoard;
+   

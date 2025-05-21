@@ -20,10 +20,9 @@ const countryList = ['일본', '미국', '베트남', '필리핀', '태국'];
 const ReviewScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
-
-  // 선택한 나라가 파라미터로 넘어오면 받음 (없으면 null)
   const initialCountry = route.params?.country || null;
 
+  const [title, setTitle] = useState('');
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState('');
   const [selectedCountry, setSelectedCountry] = useState(initialCountry);
@@ -31,6 +30,10 @@ const ReviewScreen = () => {
   const handleSubmit = async () => {
     if (!selectedCountry) {
       Alert.alert('알림', '나라를 선택해주세요!');
+      return;
+    }
+    if (title.trim() === '') {
+      Alert.alert('알림', '제목을 입력해주세요!');
       return;
     }
     if (review.trim() === '') {
@@ -41,6 +44,7 @@ const ReviewScreen = () => {
     const newReview = {
       id: Date.now().toString(),
       country: selectedCountry,
+      title: title.trim(),
       rating,
       review,
       date: new Date().toISOString(),
@@ -53,7 +57,6 @@ const ReviewScreen = () => {
       await AsyncStorage.setItem('reviews', JSON.stringify(updatedReviews));
       Alert.alert('성공', '리뷰가 저장되었습니다!');
 
-      // 저장 후 해당 나라 게시판으로 이동
       switch (selectedCountry) {
         case '일본':
           navigation.navigate('JapanBoardStack');
@@ -129,6 +132,14 @@ const ReviewScreen = () => {
           </View>
 
           <TextInput
+            style={styles.titleInput}
+            placeholder="제목을 입력해주세요"
+            placeholderTextColor="#999"
+            value={title}
+            onChangeText={setTitle}
+          />
+
+          <TextInput
             style={styles.inputBox}
             multiline
             placeholder="여행기록을 남겨보세요!"
@@ -174,15 +185,25 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginTop: 20,
   },
+  titleInput: {
+    height: 45,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    fontSize: 15,
+    marginTop: 10,
+    marginBottom: 10,
+  },
   inputBox: {
-    height: 300,
+    height: 250,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 10,
     padding: 15,
     fontSize: 15,
     textAlignVertical: 'top',
-    marginTop: 20,
+    marginTop: 10,
   },
   submitButton: {
     backgroundColor: '#007AFF',

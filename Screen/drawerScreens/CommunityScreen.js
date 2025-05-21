@@ -14,6 +14,7 @@ const countryList = ['일본', '미국', '베트남', '필리핀', '태국'];
 const CommunityScreen = () => {
   const navigation = useNavigation();
   const [latestPosts, setLatestPosts] = useState({});
+  const [popularPosts, setPopularPosts] = useState([]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -32,7 +33,17 @@ const CommunityScreen = () => {
             }
           });
 
+          const popular = reviews.filter(
+            (r) => (r.likes || 0) >= 5 || (r.comments?.length || 0) >= 5
+          );
+          popular.sort((a, b) => {
+            const aScore = (a.likes || 0) + (a.comments?.length || 0);
+            const bScore = (b.likes || 0) + (b.comments?.length || 0);
+            return bScore - aScore;
+          });
+
           setLatestPosts(grouped);
+          setPopularPosts(popular.slice(0, 5));
         }
       };
       loadReviews();
@@ -59,6 +70,10 @@ const CommunityScreen = () => {
       default:
         break;
     }
+  };
+
+  const handlePostPress = (post) => {
+    navigation.navigate('PostDetailScreen', { post });
   };
 
   return (
@@ -94,6 +109,30 @@ const CommunityScreen = () => {
         )}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
       />
+
+      {/* 실시간 인기글 섹션 */}
+      <View style={styles.popularSection}>
+        <Text style={styles.popularTitle}>🔥 실시간 인기글</Text>
+        {popularPosts.length === 0 ? (
+          <Text style={styles.noPopularText}>인기 게시글이 없습니다.</Text>
+        ) : (
+          popularPosts.map((post, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() => handlePostPress(post)}
+              style={styles.popularItem}
+            >
+              <Text style={styles.popularText} numberOfLines={1}>
+                {post.review}
+              </Text>
+              <Text style={styles.popularInfo}>
+                {post.author || '익명'} · ❤️ {post.likes || 0} · 💬{' '}
+                {post.comments?.length || 0}
+              </Text>
+            </TouchableOpacity>
+          ))
+        )}
+      </View>
     </View>
   );
 };
@@ -115,6 +154,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 15,
     paddingVertical: 15,
     paddingHorizontal: 10,
+    marginBottom: 10, // 간격 줄임
   },
   boardItem: {
     flexDirection: 'row',
@@ -131,6 +171,36 @@ const styles = StyleSheet.create({
     maxWidth: '60%',
   },
   separator: { height: 5 },
+  popularSection: {
+    marginHorizontal: 15,
+    marginTop: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    backgroundColor: '#fff6f0',
+    borderRadius: 10,
+  },
+  popularTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#e85a00',
+  },
+  noPopularText: {
+    fontSize: 14,
+    color: '#999',
+  },
+  popularItem: {
+    marginBottom: 8,
+  },
+  popularText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#333',
+  },
+  popularInfo: {
+    fontSize: 13,
+    color: '#777',
+  },
 });
 
 export default CommunityScreen;

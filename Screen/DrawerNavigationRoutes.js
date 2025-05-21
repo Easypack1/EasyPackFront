@@ -19,7 +19,6 @@ import USABoard from './drawerScreens/USABoard';
 import VietnamBoard from './drawerScreens/VietnamBoard';
 import PhilippinesBoard from './drawerScreens/PhilippinesBoard';
 import ThailandBoard from './drawerScreens/ThailandBoard';
-import PostDetailScreen from './drawerScreens/PostDetailScreen';
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -175,11 +174,6 @@ const DrawerNavigatorRoutes = () => {
         name="ThailandBoardStack"
         options={{ drawerLabel: 'Thailand' }}
         component={createScreenStack('ThailandBoard', ThailandBoard)}
-      />
-      <Drawer.Screen
-        name="PostDetailScreenStack"
-        options={{ drawerLabel: 'PostDetail' }}
-        component={createScreenStack('PostDetailScreen', PostDetailScreen)}
       />
     </Drawer.Navigator>
   );

@@ -9,26 +9,32 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
+  Alert,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const countryList = ['일본', '미국', '베트남', '필리핀', '태국'];
 
 const ReviewScreen = () => {
+  const navigation = useNavigation();
+  const route = useRoute();
+
+  // 선택한 나라가 파라미터로 넘어오면 받음 (없으면 null)
+  const initialCountry = route.params?.country || null;
+
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState(null);
-  const navigation = useNavigation();
+  const [selectedCountry, setSelectedCountry] = useState(initialCountry);
 
   const handleSubmit = async () => {
     if (!selectedCountry) {
-      alert('나라를 선택해주세요!');
+      Alert.alert('알림', '나라를 선택해주세요!');
       return;
     }
     if (review.trim() === '') {
-      alert('리뷰를 작성해주세요!');
+      Alert.alert('알림', '리뷰를 작성해주세요!');
       return;
     }
 
@@ -45,10 +51,32 @@ const ReviewScreen = () => {
       const parsedReviews = storedReviews ? JSON.parse(storedReviews) : [];
       const updatedReviews = [...parsedReviews, newReview];
       await AsyncStorage.setItem('reviews', JSON.stringify(updatedReviews));
-      alert('리뷰가 저장되었습니다!');
-      navigation.navigate('CommunityScreen');
+      Alert.alert('성공', '리뷰가 저장되었습니다!');
+
+      // 저장 후 해당 나라 게시판으로 이동
+      switch (selectedCountry) {
+        case '일본':
+          navigation.navigate('JapanBoardStack');
+          break;
+        case '미국':
+          navigation.navigate('USABoardStack');
+          break;
+        case '베트남':
+          navigation.navigate('VietnamBoardStack');
+          break;
+        case '필리핀':
+          navigation.navigate('PhilippinesBoardStack');
+          break;
+        case '태국':
+          navigation.navigate('ThailandBoardStack');
+          break;
+        default:
+          navigation.goBack();
+          break;
+      }
     } catch (error) {
-      console.error('리뷰 저장 중 오류 발생:', error);
+      console.error('리뷰 저장 중 오류:', error);
+      Alert.alert('오류', '리뷰 저장 중 오류가 발생했습니다.');
     }
   };
 

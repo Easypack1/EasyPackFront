@@ -15,14 +15,14 @@ const ThailandBoard = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      const loadPosts = async () => {
+      const loadReviews = async () => {
         try {
-          const storedPosts = await AsyncStorage.getItem('posts');
-          if (storedPosts) {
-            const allPosts = JSON.parse(storedPosts);
-            const ThailandPosts = allPosts.filter(post => post.country === '태국');
-            ThailandPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
-            setPosts(ThailandPosts);
+          const storedReviews = await AsyncStorage.getItem('reviews');
+          if (storedReviews) {
+            const allReviews = JSON.parse(storedReviews);
+            const japanPosts = allReviews.filter(post => post.country === '태국');
+            japanPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
+            setPosts(japanPosts);
           } else {
             setPosts([]);
           }
@@ -30,12 +30,12 @@ const ThailandBoard = () => {
           console.error('Failed to load posts', e);
         }
       };
-      loadPosts();
+      loadReviews();
     }, [])
   );
 
   const handlePostPress = (post) => {
-    navigation.navigate('PostDetailScreen', { post });
+    navigation.navigate('PostDetailScreenStack', { post });
   };
 
   const handleWritePress = () => {
@@ -51,13 +51,12 @@ const ThailandBoard = () => {
       style={styles.postItem}
       onPress={() => handlePostPress(item)}
     >
-      <Text style={styles.arrowIcon}>←</Text>
       <View style={styles.postTextContainer}>
         <Text style={styles.postTitle} numberOfLines={1}>
-          {item.title}
+          {item.review.slice(0, 15)}...
         </Text>
         <Text style={styles.postPreview} numberOfLines={1}>
-          {item.content}
+          ⭐️ {item.rating}점
         </Text>
       </View>
       <Text style={styles.postDate}>

@@ -11,7 +11,13 @@ import SettingsScreen from './drawerScreens/SettingsScreen';
 import CameraScreen from './drawerScreens/CameraScreen';
 import DetectedInfoScreen from './drawerScreens/DetectedInfoScreen';
 import CommunityScreen from './drawerScreens/CommunityScreen';
+import InfoScreen from './drawerScreens/InfoScreen';
+import InfoScreen2 from './drawerScreens/InfoScreen2';
+import InfoScreen3 from './drawerScreens/InfoScreen3';
 import ReviewScreen from './drawerScreens/ReviewScreen';
+import AirlineInfoScreen from './drawerScreens/AirlineInfoScreen';
+import CustomSidebarMenu from './Components/CustomSidebarMenu';
+import BackBtn from './Components/BackBtn';
 import JapanBoard from './drawerScreens/JapanBoard';
 import USABoard from './drawerScreens/USABoard';
 import VietnamBoard from './drawerScreens/VietnamBoard';
@@ -19,22 +25,21 @@ import PhilippinesBoard from './drawerScreens/PhilippinesBoard';
 import ThailandBoard from './drawerScreens/ThailandBoard';
 import PostDetailScreen from './drawerScreens/PostDetailScreen';
 
-import CustomSidebarMenu from './Components/CustomSidebarMenu';
-import BackBtn from './Components/BackBtn';
-
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
 
-// 기존 createScreenStack 함수 그대로 유지
 const createScreenStack = (name, Component) => {
-  return ({ navigation }) => (
+  return ({ navigation, route }) => (
     <Stack.Navigator>
       <Stack.Screen
         name={name}
         component={Component}
+        initialParams={route?.params}  // ← params 전달
         options={{
           title: '',
-          headerLeft: name === 'HomeScreen' ? undefined : () => <BackBtn onPress={() => navigation.goBack()} />,
+          headerLeft: name === 'HomeScreen'
+            ? undefined
+            : () => <BackBtn onPress={() => navigation.goBack()} />,
           headerShadowVisible: false,
           headerStyle: {
             backgroundColor: '#ffffff',
@@ -52,7 +57,6 @@ const createScreenStack = (name, Component) => {
   );
 };
 
-// CameraStack 유지
 const CameraStack = () => (
   <Stack.Navigator>
     <Stack.Screen
@@ -68,7 +72,9 @@ const CameraStack = () => (
           borderBottomWidth: 0,
         },
         headerTintColor: '#fff',
-        headerTitleStyle: { fontWeight: 'bold' },
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
       }}
     />
     <Stack.Screen
@@ -85,61 +91,14 @@ const CameraStack = () => (
           borderBottomWidth: 0,
         },
         headerTintColor: '#fff',
-        headerTitleStyle: { fontWeight: 'bold' },
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
       }}
     />
   </Stack.Navigator>
 );
 
-// 커뮤니티 관련 스택 정의 (CommunityScreen -> ReviewScreen -> 각 게시판)
-function CommunityStack() {
-  return (
-    <Stack.Navigator initialRouteName="CommunityScreen">
-      <Stack.Screen
-        name="CommunityScreen"
-        component={CommunityScreen}
-        options={{ title: '커뮤니티' }}
-      />
-      <Stack.Screen
-        name="ReviewScreen"
-        component={ReviewScreen}
-        options={{ title: '리뷰 작성' }}
-      />
-      <Stack.Screen
-        name="JapanBoard"
-        component={JapanBoard}
-        options={{ title: '일본 게시판' }}
-      />
-      <Stack.Screen
-        name="USABoard"
-        component={USABoard}
-        options={{ title: '미국 게시판' }}
-      />
-      <Stack.Screen
-        name="VietnamBoard"
-        component={VietnamBoard}
-        options={{ title: '베트남 게시판' }}
-      />
-      <Stack.Screen
-        name="PhilippinesBoard"
-        component={PhilippinesBoard}
-        options={{ title: '필리핀 게시판' }}
-      />
-      <Stack.Screen
-        name="ThailandBoard"
-        component={ThailandBoard}
-        options={{ title: '태국 게시판' }}
-      />
-      <Stack.Screen
-        name="PostDetailScreen"
-        component={PostDetailScreen}
-        options={{ title: '게시글 상세' }}
-      />
-    </Stack.Navigator>
-  );
-}
-
-// Drawer Navigator Routes (커뮤니티는 CommunityStack으로 통합)
 const DrawerNavigatorRoutes = () => {
   return (
     <Drawer.Navigator
@@ -167,11 +126,10 @@ const DrawerNavigatorRoutes = () => {
         component={CameraStack}
       />
       <Drawer.Screen
-        name="CommunityStack"
+        name="CommunityScreenStack"
         options={{ drawerLabel: 'Community' }}
-        component={CommunityStack} // 여기에 커뮤니티 관련 스택 통합
+        component={createScreenStack('CommunityScreen', CommunityScreen)}
       />
-      {/* 나머지 InfoScreen 등도 기존대로 */}
       <Drawer.Screen
         name="InfoScreenStack"
         options={{ drawerLabel: 'Info' }}
@@ -196,6 +154,36 @@ const DrawerNavigatorRoutes = () => {
         name="AirlineInfoScreenStack"
         options={{ drawerLabel: 'Airline' }}
         component={createScreenStack('AirlineInfoScreen', AirlineInfoScreen)}
+      />
+      <Drawer.Screen
+        name="JapanBoardStack"
+        options={{ drawerLabel: 'Japan' }}
+        component={createScreenStack('JapanBoard', JapanBoard)}
+      />
+      <Drawer.Screen
+        name="USABoardStack"
+        options={{ drawerLabel: 'USA' }}
+        component={createScreenStack('USABoard', USABoard)}
+      />
+      <Drawer.Screen
+        name="VietnamBoardStack"
+        options={{ drawerLabel: 'Vietnam' }}
+        component={createScreenStack('VietnamBoard', VietnamBoard)}
+      />
+      <Drawer.Screen
+        name="PhilippinesBoardStack"
+        options={{ drawerLabel: 'Philippines' }}
+        component={createScreenStack('PhilippinesBoard', PhilippinesBoard)}
+      />
+      <Drawer.Screen
+        name="ThailandBoardStack"
+        options={{ drawerLabel: 'Thailand' }}
+        component={createScreenStack('ThailandBoard', ThailandBoard)}
+      />
+      <Drawer.Screen
+        name="PostDetailScreenStack"
+        options={{ drawerLabel: 'PostDetail' }}
+        component={createScreenStack('PostDetailScreen', PostDetailScreen)}
       />
     </Drawer.Navigator>
   );

@@ -3,10 +3,6 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 
 import HomeScreen from './drawerScreens/HomeScreen';
-import InfoScreen from './drawerScreens/InfoScreen';
-import InfoScreen2 from './drawerScreens/InfoScreen2';
-import InfoScreen3 from './drawerScreens/InfoScreen3';
-import AirlineInfoScreen from './drawerScreens/AirlineInfoScreen';
 import SettingsScreen from './drawerScreens/SettingsScreen';
 import CameraScreen from './drawerScreens/CameraScreen';
 import DetectedInfoScreen from './drawerScreens/DetectedInfoScreen';
